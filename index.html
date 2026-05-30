@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lancha Port Ops</title>
+  <style>
+    :root {
+      --bg-sidebar: #1a2332;
+      --bg-topbar: #1a2332;
+      --bg-main: #f0f2f5;
+      --bg-card: #ffffff;
+      --accent-blue: #3b82f6;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --border: #e5e7eb;
+      --estado-nominado-bg: #fef3c7;
+      --estado-nominado-text: #d97706;
+      --estado-finalizado-bg: #d1fae5;
+      --estado-finalizado-text: #059669;
+      --estado-facturado-bg: #dbeafe;
+      --estado-facturado-text: #1d4ed8;
+      --alerta-rojo-bg: #fee2e2;
+      --alerta-rojo-text: #dc2626;
+      --alerta-amarillo-bg: #fef9c3;
+      --alerta-amarillo-text: #ca8a04;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: var(--font);
+      color: var(--text-primary);
+      background: var(--bg-main);
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      background: none;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid rgba(59, 130, 246, 0.55);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      height: 48px;
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      background: var(--bg-topbar);
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 15px;
+    }
+
+    .topbar-date {
+      color: #cbd5e1;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .topbar-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-pill {
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #fed7aa;
+      background: rgba(251, 146, 60, 0.14);
+      border: 1px solid rgba(251, 146, 60, 0.24);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .alerts-menu {
+      position: absolute;
+      top: 36px;
+      right: 42px;
+      width: 318px;
+      padding: 8px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text-primary);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--border);
+      display: none;
+    }
+
+    .alerts-menu.open { display: block; }
+
+    .alert-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .alert-item + .alert-item { margin-top: 4px; }
+
+    .alert-item:hover { background: #f9fafb; }
+
+    .sidebar {
+      position: fixed;
+      top: 48px;
+      left: 0;
+      bottom: 0;
+      z-index: 20;
+      width: 168px;
+      background: var(--bg-sidebar);
+      padding: 18px 0;
+      color: #d1d5db;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      padding: 0 12px;
+      margin-bottom: 22px;
+    }
+
+    .nav-label {
+      padding: 0 8px;
+      margin: 0 0 8px;
+      color: var(--text-muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+
+    .nav-item {
+      width: 100%;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 8px 8px 10px;
+      border-left: 3px solid transparent;
+      border-radius: 0 6px 6px 0;
+      color: #cbd5e1;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); }
+
+    .nav-item.active {
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.08);
+      border-left-color: var(--accent-blue);
+    }
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .nav-text {
+      flex: 1;
+      min-width: 0;
+      line-height: 1.1;
+    }
+
+    .nav-badge {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.18);
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .main {
+      margin-left: 168px;
+      padding: 72px 24px 24px;
+      min-height: 100vh;
+      background: var(--bg-main);
+    }
+
+    .screen-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .screen-title {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+
+    .screen-subtitle {
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    .btn-primary:hover { background: #2563eb; }
+
+    .btn-secondary {
+      color: var(--text-primary);
+      background: #fff;
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover { background: #f9fafb; }
+
+    .btn-outline-success {
+      color: #047857;
+      background: #fff;
+      border-color: #86efac;
+    }
+
+    .btn-outline-success:hover { background: #ecfdf5; }
+
+    .btn-link {
+      color: var(--accent-blue);
+      background: transparent;
+      border: 0;
+      padding: 0;
+      height: auto;
+      font-weight: 600;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .kpi-grid.dashboard-kpis {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card {
+      padding: 14px 16px;
+      border-top: 4px solid #d1d5db;
+    }
+
+    .kpi-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .kpi-value {
+      margin-top: 8px;
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .kpi-note {
+      margin-top: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .kpi-blue { color: var(--accent-blue); }
+    .kpi-green { color: #059669; }
+    .kpi-amber { color: #d97706; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 0;
+      padding-left: 2px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      height: 40px;
+      padding: 0 14px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      background: #fff;
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      height: 38px;
+      padding: 0 14px;
+      color: var(--text-muted);
+      background: #fff;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    tbody tr {
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:hover { background: #f9fafb; }
+    tbody tr.alert-row { background: #fff5f5; }
+    tbody tr.alert-row:hover { background: #feecec; }
+    tbody tr.clickable { cursor: pointer; }
+
+    .eta-main {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .eta-status {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .text-green { color: #059669; }
+    .text-red { color: #dc2626; }
+    .text-blue { color: var(--accent-blue); }
+    .text-grey { color: var(--text-secondary); }
+
+    .ship-name {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .ship-meta {
+      color: var(--text-secondary);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .service-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .service-pill,
+    .tarifa-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill-crew { background: #dbeafe; color: #1d4ed8; }
+    .pill-carga { background: #fef9c3; color: #92400e; }
+    .pill-practico { background: #ede9fe; color: #6d28d9; }
+    .pill-fondeo { background: #d1fae5; color: #065f46; }
+
+    .badge-estado {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .estado-nominado {
+      background: var(--estado-nominado-bg);
+      color: var(--estado-nominado-text);
+    }
+
+    .estado-finalizado {
+      background: var(--estado-finalizado-bg);
+      color: var(--estado-finalizado-text);
+    }
+
+    .estado-facturado {
+      background: var(--estado-facturado-bg);
+      color: var(--estado-facturado-text);
+    }
+
+    .alert-tags {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      min-width: 148px;
+    }
+
+    .alert-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .alert-red {
+      color: var(--alerta-rojo-text);
+      background: var(--alerta-rojo-bg);
+    }
+
+    .alert-amber {
+      color: var(--alerta-amarillo-text);
+      background: var(--alerta-amarillo-bg);
+    }
+
+    .muted-dash {
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .summary-text {
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .table-action {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 90;
+      width: 560px;
+      max-width: 100vw;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -18px 0 45px rgba(0, 0, 0, 0.22);
+      transform: translateX(100%);
+      transition: transform 0.24s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-header {
+      min-height: 104px;
+      padding: 20px 24px 18px;
+      color: #fff;
+      background: var(--bg-topbar);
+      position: relative;
+    }
+
+    .drawer-exp {
+      color: #cbd5e1;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .drawer-title {
+      margin: 8px 0 0;
+      font-size: 24px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+
+    .drawer-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: #e5e7eb;
+      font-size: 22px;
+    }
+
+    .drawer-close:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .drawer-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .drawer-tab {
+      flex: 1;
+      height: 46px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .drawer-tab.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 24px 96px;
+      background: #fff;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta-label,
+    .section-label,
+    .client-column-title {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .meta-value {
+      margin-top: 5px;
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .detail-section {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .service-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fcfcfd;
+    }
+
+    .service-box + .service-box { margin-top: 10px; }
+
+    .service-box-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .service-box-count {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+
+    .service-box-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+
+    .service-box-meta span {
+      display: block;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    .notes-box {
+      padding: 12px;
+      border-radius: 8px;
+      background: #f9fafb;
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.5;
+      border: 1px solid var(--border);
+    }
+
+    .drawer-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 18px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+    }
+
+    .document-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .document-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(17, 24, 39, 0.42);
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(560px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+      border: 1px solid var(--border);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      font-size: 21px;
+    }
+
+    .modal-close:hover { background: #f3f4f6; }
+
+    .modal-body { padding: 18px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: var(--text-primary);
+      background: #fff;
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      background: #f9fafb;
+    }
+
+    .client-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .client-card {
+      padding: 18px;
+    }
+
+    .client-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .client-name {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .client-subtitle {
+      margin-top: 5px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .client-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .account-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      border: 1px solid currentColor;
+      background: #fff;
+    }
+
+    .account-ok { color: #059669; }
+    .account-pending { color: #ca8a04; }
+
+    .client-grid {
+      display: grid;
+      grid-template-columns: 1.65fr 1fr 1fr 1fr;
+      gap: 18px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    .client-lines {
+      display: grid;
+      gap: 7px;
+      margin-top: 9px;
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .client-lines .muted {
+      color: var(--text-secondary);
+    }
+
+    .client-balance {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .negative { color: #dc2626; }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .chart-card {
+      padding: 16px;
+      min-height: 290px;
+    }
+
+    .chart-title {
+      margin: 0 0 14px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .chart-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 170px;
+      gap: 16px;
+      align-items: center;
+    }
+
+    canvas {
+      max-width: 100%;
+      display: block;
+    }
+
+    #billingChart,
+    #servicesChart {
+      width: 100%;
+      height: 220px;
+    }
+
+    #donutChart {
+      width: 220px;
+      height: 220px;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 12px 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .hours-table td,
+    .hours-table th {
+      height: 42px;
+    }
+
+    .hours-table .total-row td {
+      border-top: 2px solid var(--border);
+      font-weight: 800;
+      background: #f9fafb;
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 200;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 300px;
+      max-width: 420px;
+      padding: 12px 14px;
+      color: #fff;
+      background: #111827;
+      border-radius: 8px;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+      font-size: 13px;
+      font-weight: 600;
+      animation: toast-in 0.22s ease both;
+    }
+
+    @keyframes toast-in {
+      from { transform: translateX(24px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .invoice-preview {
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 18px;
+      background: #f8fafc;
+      line-height: 1.55;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 1100px) {
+      .kpi-grid,
+      .kpi-grid.dashboard-kpis,
+      .chart-grid,
+      .client-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .table-card { overflow-x: auto; }
+      table { min-width: 900px; }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        grid-template-columns: 1fr auto;
+      }
+
+      .topbar-date { display: none; }
+
+      .sidebar {
+        width: 70px;
+      }
+
+      .nav-label,
+      .nav-text,
+      .nav-badge {
+        display: none;
+      }
+
+      .nav-item {
+        justify-content: center;
+        padding-left: 8px;
+      }
+
+      .main {
+        margin-left: 70px;
+        padding: 68px 14px 18px;
+      }
+
+      .screen-header {
+        flex-direction: column;
+      }
+
+      .kpi-grid,
+      .kpi-grid.dashboard-kpis,
+      .chart-grid,
+      .client-grid,
+      .form-grid,
+      .meta-grid,
+      .service-box-meta,
+      .chart-content {
+        grid-template-columns: 1fr;
+      }
+
+      .drawer {
+        width: 100vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">🚤</span><span>Lancha Port Ops</span></div>
+    <div class="topbar-date" id="topbarDate"></div>
+    <div class="topbar-actions">
+      <button class="alert-pill" id="alertsButton" type="button">⚠ 2 alertas activas</button>
+      <div class="alerts-menu" id="alertsMenu" role="menu">
+        <div class="alert-item">⚠ <strong>COSCO SHIPPING</strong> — ETA retrasada +90 min</div>
+        <div class="alert-item">⚠ <strong>COSCO SHIPPING</strong> — Capacidad excedida</div>
+      </div>
+      <div class="avatar">JM</div>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <section class="nav-section">
+      <p class="nav-label">Operaciones</p>
+      <button class="nav-item active" type="button" data-view="pizarra">
+        <span class="nav-icon">📋</span><span class="nav-text">Pizarra de operaciones</span><span class="nav-badge" id="pizarraBadge">6</span>
+      </button>
+      <button class="nav-item" type="button" data-view="registro">
+        <span class="nav-icon">📁</span><span class="nav-text">Registro de servicios</span>
+      </button>
+    </section>
+    <section class="nav-section">
+      <p class="nav-label">Comercial</p>
+      <button class="nav-item" type="button" data-view="clientes">
+        <span class="nav-icon">👥</span><span class="nav-text">Registro de clientes</span>
+      </button>
+    </section>
+    <section class="nav-section">
+      <p class="nav-label">Análisis</p>
+      <button class="nav-item" type="button" data-view="dashboard">
+        <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
+      </button>
+    </section>
+  </aside>
+
+  <main class="main" id="app"></main>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+  <div class="modal-backdrop" id="serviceModal"></div>
+  <div class="modal-backdrop" id="clientModal"></div>
+  <div class="modal-backdrop" id="invoiceModal"></div>
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script>
+    const SERVICIOS = [
+      {
+        id: "#2026-0242", buque: "MSC CARLA", bandera: "🇵🇦", pais: "Panama", naviera: "MSC Lines",
+        eta: "14:30", fecha: "22 May 2026", agente: "Marítima Sur S.L.",
+        servicio: ["crew"], estado: "nominado",
+        crew: { in: 4, out: 2, nacionalidad: "Filipina / India", destino_out: "Aeropuerto Gibraltar" },
+        carga: { bultos: 8, peso: 640, descripcion: "Repuestos motor", adr: false, proveedor: "Proveedor Marítimo S.A." },
+        lancha: "Lancha Nº 3 · Patrón R. Mora", posicion: "Muelle Sur · Atraque 7",
+        notas: "Coordinar con Aduana antes de salida. Crew IN con documentación Schengen. Preferencia de muelle sector sur.",
+        alertas: [], eta_status: "a_tiempo"
+      },
+      {
+        id: "#2026-0243", buque: "COSCO SHIPPING", bandera: "🇨🇳", pais: "China", naviera: "COSCO",
+        eta: "16:00", fecha: "22 May 2026", agente: "Transitarios del Sur",
+        servicio: ["crew"], estado: "nominado",
+        crew: { in: 6, out: 6, nacionalidad: "China", destino_out: "Madrid" },
+        carga: null, lancha: "Lancha Nº 1 · Patrón J. García", posicion: "Fondeo Sur",
+        notas: "Pasaportes pendientes de verificación aduanera.",
+        alertas: ["eta_retrasada", "cap_excedida"], eta_status: "retrasado", eta_delay: "+90 min"
+      },
+      {
+        id: "#2026-0244", buque: "MAERSK VALENCIA", bandera: "🇩🇰", pais: "Denmark", naviera: "Maersk",
+        eta: "15:15", fecha: "22 May 2026", agente: "Agencia Norte S.A.",
+        servicio: ["carga"], estado: "nominado",
+        crew: null,
+        carga: { bultos: 24, peso: 1240, descripcion: "Material eléctrico", adr: false, proveedor: "Suministros Iberia S.L." },
+        lancha: "Lancha Nº 2 · Patrón M. Ruiz", posicion: "Muelle Norte · Atraque 3",
+        notas: "Verificar peso máximo lancha antes de salida.",
+        alertas: ["sin_checklist"], eta_status: "a_tiempo"
+      },
+      {
+        id: "#2026-0245", buque: "EVER GIVEN II", bandera: "🇵🇦", pais: "Panama", naviera: "Evergreen",
+        eta: "13:45", fecha: "22 May 2026", agente: "Port Authority",
+        servicio: ["practico"], estado: "nominado",
+        crew: { in: 1, out: 0, nacionalidad: "España", destino_out: "" }, carga: null,
+        lancha: "Lancha Nº 4 · Patrón A. López", posicion: "Canal principal",
+        notas: "Práctico Sr. Fernández. Confirmado.",
+        alertas: [], eta_status: "en_ruta"
+      },
+      {
+        id: "#2026-0240", buque: "CMA CGM MARCO POLO", bandera: "🇫🇷", pais: "France", naviera: "CMA CGM",
+        eta: "12:00", fecha: "22 May 2026", agente: "Marítima Sur S.L.",
+        servicio: ["carga"], estado: "finalizado",
+        crew: null,
+        carga: { bultos: 12, peso: 3600, tipo: "pallets", descripcion: "Maquinaria industrial", adr: false, proveedor: "Cargoport S.A." },
+        lancha: "Lancha Nº 3 · Patrón R. Mora", posicion: "Muelle Sur · Atraque 5",
+        notas: "Servicio completado sin incidencias.",
+        alertas: [], eta_status: "completado"
+      },
+      {
+        id: "#2026-0241", buque: "MSC GÜLSÜN", bandera: "🇵🇦", pais: "Panama", naviera: "MSC Lines",
+        eta: "10:30", fecha: "22 May 2026", agente: "Transitarios del Sur",
+        servicio: ["crew", "fondeo"], estado: "finalizado",
+        crew: { in: 3, out: 3, nacionalidad: "Filipina", destino_out: "Sevilla" },
+        carga: null,
+        lancha: "Lancha Nº 2 · Patrón M. Ruiz", posicion: "Fondeo exterior",
+        notas: "Fondeo completado. Crew gestionado sin incidencias.",
+        alertas: [], eta_status: "completado"
+      }
+    ];
+
+    const REGISTRO = [
+      { id: "#2026-0241", fecha: "21 May 2026", buque: "ATLANTIC PHOENIX", bandera: "🇵🇦", pais: "Panama", naviera: "Atlantic Lines", agente: "Agencia Central",
+        servicio: ["crew"], resumen: "IN 2 · OUT 2", factura: "#F-2026-0312", importe: "€480,00", estado: "facturado" },
+      { id: "#2026-0240", fecha: "21 May 2026", buque: "HAPAG EXPRESS", bandera: "🇩🇪", pais: "Germany", naviera: "Hapag-Lloyd", agente: "Marítima Sur S.L.",
+        servicio: ["carga"], resumen: "18 bultos · 920 kg", factura: "#F-2026-0311", importe: "€1.240,00", estado: "facturado" },
+      { id: "#2026-0239", fecha: "20 May 2026", buque: "ONE CONTINUITY", bandera: "🇸🇬", pais: "Singapore", naviera: "ONE", agente: "Transitarios del Sur",
+        servicio: ["fondeo"], resumen: "Fondeo 4h", factura: "#F-2026-0310", importe: "€2.100,00", estado: "facturado" }
+    ];
+
+    const CLIENTES = [
+      { nombre: "Marítima Sur S.L.", tipo: "Agencia Marítima", cif: "B-29384756",
+        direccion: "C/ Puerto, 14 · Algeciras 11201", tel: "+34 956 123 456",
+        email: "ops@maritima-sur.es", razon: "Marítima Sur Servicios Portuarios S.L.",
+        saldo: "€4.280,00", estado_cuenta: "al_corriente",
+        ultima_factura: "21 May 2026", prox_vencimiento: "20 Jun 2026",
+        tarifas: ["Crew estándar", "Carga especial", "OPL / Fondeo"], descuento: "5%",
+        servicios_2026: 48, facturado: "€22.400", horas: "128h" },
+      { nombre: "Transitarios del Sur", tipo: "Transitario", cif: "A-11203847",
+        direccion: "Av. del Mar, 88 · La Línea 11300", tel: "+34 956 654 321",
+        email: "facturas@transitarios-sur.com", razon: "Transitarios del Sur S.L.",
+        saldo: "-€1.850,00", estado_cuenta: "saldo_pendiente",
+        ultima_factura: "09 May 2026", prox_vencimiento: "Vencido hace 12 días",
+        tarifas: ["Crew estándar", "OPL / Fondeo"], descuento: null,
+        servicios_2026: 31, facturado: "€14.700", horas: "84h" }
+    ];
+
+    const state = {
+      view: "pizarra",
+      filter: "todos",
+      selectedService: null,
+      drawerTab: "detalle"
+    };
+
+    const app = document.getElementById("app");
+    const drawer = document.getElementById("drawer");
+    const drawerBackdrop = document.getElementById("drawerBackdrop");
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function init() {
+      document.getElementById("topbarDate").textContent =
+        `${new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · Puerto de Algeciras`;
+
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          state.view = item.dataset.view;
+          state.filter = "todos";
+          setActiveNav();
+          render();
+        });
+      });
+
+      document.getElementById("alertsButton").addEventListener("click", (event) => {
+        event.stopPropagation();
+        document.getElementById("alertsMenu").classList.toggle("open");
+      });
+
+      document.addEventListener("click", () => {
+        document.getElementById("alertsMenu").classList.remove("open");
+      });
+
+      drawerBackdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeDrawer();
+          closeAllModals();
+        }
+      });
+
+      updateBadge();
+      render();
+    }
+
+    function setActiveNav() {
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.classList.toggle("active", item.dataset.view === state.view);
+      });
+    }
+
+    function updateBadge() {
+      document.getElementById("pizarraBadge").textContent = SERVICIOS.filter((servicio) => servicio.estado !== "facturado").length;
+    }
+
+    function render() {
+      updateBadge();
+      if (state.view === "pizarra") renderPizarra();
+      if (state.view === "registro") renderRegistro();
+      if (state.view === "clientes") renderClientes();
+      if (state.view === "dashboard") renderDashboard();
+    }
+
+    function pageHeader(title, subtitle, actions = "") {
+      return `
+        <div class="screen-header">
+          <div>
+            <h1 class="screen-title">${title}</h1>
+            <p class="screen-subtitle">${subtitle}</p>
+          </div>
+          <div class="header-actions">${actions}</div>
+        </div>
+      `;
+    }
+
+    function renderPizarra() {
+      const rows = getPizarraRows();
+      const nominados = SERVICIOS.filter((s) => s.estado === "nominado").length;
+      const finalizados = SERVICIOS.filter((s) => s.estado === "finalizado").length;
+
+      app.innerHTML = `
+        ${pageHeader(
+          "Pizarra de Operaciones",
+          "Servicios activos · Estados: Nominado · Finalizado · Facturado",
+          `<button class="btn btn-secondary" type="button">Filtrar</button>
+           <button class="btn btn-primary" type="button" id="newServiceBtn">+ Nuevo servicio</button>`
+        )}
+        <section class="kpi-grid">
+          <article class="card kpi-card" style="border-top-color:#f59e0b">
+            <div class="kpi-label">Nominados</div><div class="kpi-value">${nominados}</div><div class="kpi-note">En preparación</div>
+          </article>
+          <article class="card kpi-card" style="border-top-color:#10b981">
+            <div class="kpi-label">Finalizados</div><div class="kpi-value">${finalizados}</div><div class="kpi-note">Pendiente factura</div>
+          </article>
+          <article class="card kpi-card" style="border-top-color:#3b82f6">
+            <div class="kpi-label">Facturados hoy</div><div class="kpi-value">3</div><div class="kpi-note">→ Registro</div>
+          </article>
+          <article class="card kpi-card" style="border-top-color:#9ca3af">
+            <div class="kpi-label">Total hoy</div><div class="kpi-value">9</div><div class="kpi-note">+1 vs ayer</div>
+          </article>
+        </section>
+        <section class="card table-card">
+          <div class="tabs">
+            <button class="tab-btn ${state.filter === "todos" ? "active" : ""}" type="button" data-filter="todos">Todos (${SERVICIOS.filter((s) => s.estado !== "facturado").length})</button>
+            <button class="tab-btn ${state.filter === "nominado" ? "active" : ""}" type="button" data-filter="nominado">Nominados (${nominados})</button>
+            <button class="tab-btn ${state.filter === "finalizado" ? "active" : ""}" type="button" data-filter="finalizado">Finalizados (${finalizados})</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ETA</th><th>Buque</th><th>Agente</th><th>Servicio</th><th>Resumen</th><th>Alertas</th><th>Estado</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.length ? rows.map(renderServiceRow).join("") : `<tr><td colspan="8"><div class="empty-state">No hay servicios para este filtro.</div></td></tr>`}
+            </tbody>
+          </table>
+        </section>
+      `;
+
+      document.getElementById("newServiceBtn").addEventListener("click", openNewServiceModal);
+      document.querySelectorAll(".tab-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.filter = button.dataset.filter;
+          renderPizarra();
+        });
+      });
+      document.querySelectorAll("[data-service-id]").forEach((row) => {
+        row.addEventListener("click", () => openDrawer(row.dataset.serviceId, "servicios"));
+      });
+      document.querySelectorAll("[data-view-service]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          openDrawer(button.dataset.viewService, "servicios");
+        });
+      });
+    }
+
+    function getPizarraRows() {
+      return SERVICIOS.filter((servicio) => {
+        if (servicio.estado === "facturado") return false;
+        return state.filter === "todos" ? true : servicio.estado === state.filter;
+      });
+    }
+
+    function renderServiceRow(servicio) {
+      return `
+        <tr class="clickable ${servicio.alertas.length ? "alert-row" : ""}" data-service-id="${esc(servicio.id)}">
+          <td>${etaMarkup(servicio)}</td>
+          <td>
+            <span class="ship-name">${esc(servicio.buque)}</span>
+            <span class="ship-meta">${servicio.bandera} ${esc(servicio.pais)} · ${esc(servicio.naviera)}</span>
+          </td>
+          <td>${esc(servicio.agente)}</td>
+          <td><div class="service-pills">${servicioPills(servicio.servicio)}</div></td>
+          <td><span class="summary-text">${esc(resumenServicio(servicio))}</span></td>
+          <td>${alertasMarkup(servicio.alertas)}</td>
+          <td>${estadoBadge(servicio.estado)}</td>
+          <td class="table-action"><button class="btn-link" type="button" data-view-service="${esc(servicio.id)}">Ver →</button></td>
+        </tr>
+      `;
+    }
+
+    function etaMarkup(servicio) {
+      const status = {
+        a_tiempo: `<span class="eta-status text-green">A tiempo</span>`,
+        retrasado: `<span class="eta-status text-red">⚠ ${esc(servicio.eta_delay || "+90 min")}</span>`,
+        en_ruta: `<span class="eta-status text-blue">✓ En ruta</span>`,
+        completado: `<span class="eta-status text-grey">Completado</span>`
+      };
+      return `<span class="eta-main">${esc(servicio.eta)}</span>${status[servicio.eta_status] || ""}`;
+    }
+
+    function servicioPills(servicios) {
+      const config = {
+        crew: ["pill-crew", "👥", "Crew"],
+        carga: ["pill-carga", "📦", "Carga"],
+        practico: ["pill-practico", "🎓", "Práctico"],
+        fondeo: ["pill-fondeo", "⚓", "Fondeo/OPL"]
+      };
+      return servicios.map((tipo) => {
+        const item = config[tipo];
+        return `<span class="service-pill ${item[0]}">${item[1]} ${item[2]}</span>`;
+      }).join("");
+    }
+
+    function resumenServicio(servicio) {
+      if (servicio.resumen) return servicio.resumen;
+      if (servicio.servicio.includes("crew") && servicio.servicio.includes("fondeo")) return `IN ${servicio.crew.in} · OUT ${servicio.crew.out}`;
+      if (servicio.servicio.includes("crew")) return `IN ${servicio.crew.in} tripulantes · OUT ${servicio.crew.out} tripulantes`;
+      if (servicio.servicio.includes("carga")) {
+        const etiqueta = servicio.carga.tipo === "pallets" ? "PALLETS" : "BULTOS";
+        return `${etiqueta} ${servicio.carga.bultos} · PESO ${formatNumber(servicio.carga.peso)} kg`;
+      }
+      if (servicio.servicio.includes("practico")) return `IN ${servicio.crew.in} práctico`;
+      return "Fondeo 4h";
+    }
+
+    function alertasMarkup(alertas) {
+      if (!alertas.length) return `<span class="muted-dash">—</span>`;
+      const map = {
+        eta_retrasada: ["alert-red", "⚠ ETA retrasada"],
+        cap_excedida: ["alert-red", "⚠ Cap. excedida"],
+        sin_checklist: ["alert-amber", "⚠ Sin checklist"]
+      };
+      return `<div class="alert-tags">${alertas.map((alerta) => {
+        const item = map[alerta];
+        return `<span class="alert-tag ${item[0]}">${item[1]}</span>`;
+      }).join("")}</div>`;
+    }
+
+    function estadoBadge(estado) {
+      const labels = {
+        nominado: ["estado-nominado", "NOMINADO"],
+        finalizado: ["estado-finalizado", "FINALIZADO"],
+        facturado: ["estado-facturado", "FACTURADO"]
+      };
+      const item = labels[estado] || labels.nominado;
+      return `<span class="badge-estado ${item[0]}">• ${item[1]}</span>`;
+    }
+
+    function renderRegistro() {
+      app.innerHTML = `
+        ${pageHeader(
+          "Registro de Servicios",
+          "Historial de expedientes facturados",
+          `<button class="btn btn-secondary" type="button" id="exportBtn">⬇ Exportar</button>
+           <button class="btn btn-secondary" type="button">Filtrar fecha</button>`
+        )}
+        <section class="card table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº Exp.</th><th>Fecha</th><th>Buque</th><th>Agente</th><th>Servicio</th><th>Resumen</th><th>Factura</th><th>Importe</th><th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${REGISTRO.map((item) => `
+                <tr class="clickable" data-registro-id="${esc(item.id)}">
+                  <td><strong>${esc(item.id)}</strong></td>
+                  <td>${esc(item.fecha)}</td>
+                  <td><strong>${esc(item.buque)}</strong></td>
+                  <td>${esc(item.agente)}</td>
+                  <td><div class="service-pills">${servicioPills(item.servicio)}</div></td>
+                  <td>${esc(item.resumen)}</td>
+                  <td><button class="btn-link" type="button" data-invoice="${esc(item.factura)}" data-exp="${esc(item.id)}">${esc(item.factura)}</button></td>
+                  <td><strong>${esc(item.importe)}</strong></td>
+                  <td>${estadoBadge("facturado")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </section>
+      `;
+
+      document.getElementById("exportBtn").addEventListener("click", () => showToast("📊 Exportación Excel simulada en demo."));
+      document.querySelectorAll("[data-registro-id]").forEach((row) => {
+        row.addEventListener("click", () => openDrawer(row.dataset.registroId, "registro"));
+      });
+      document.querySelectorAll("[data-invoice]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          openInvoiceModal(button.dataset.invoice, button.dataset.exp);
+        });
+      });
+    }
+
+    function renderClientes() {
+      app.innerHTML = `
+        ${pageHeader(
+          "Registro de Clientes",
+          "Datos principales, facturación, tarifas y estado de cuenta",
+          `<button class="btn btn-primary" type="button" id="newClientBtn">+ Nuevo cliente</button>`
+        )}
+        <section class="client-list">
+          ${CLIENTES.map(renderClientCard).join("")}
+        </section>
+      `;
+
+      document.getElementById("newClientBtn").addEventListener("click", () => openClientModal());
+      document.querySelectorAll("[data-edit-client]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const cliente = CLIENTES.find((item) => item.nombre === button.dataset.editClient);
+          openClientModal(cliente);
+        });
+      });
+    }
+
+    function renderClientCard(cliente) {
+      const pending = cliente.estado_cuenta === "saldo_pendiente";
+      return `
+        <article class="card client-card">
+          <div class="client-card-head">
+            <div>
+              <h2 class="client-name">${esc(cliente.nombre)}</h2>
+              <div class="client-subtitle">${esc(cliente.tipo)} · CIF: ${esc(cliente.cif)}</div>
+            </div>
+            <div class="client-actions">
+              <span class="account-badge ${pending ? "account-pending" : "account-ok"}">• ${pending ? "SALDO PENDIENTE" : "AL CORRIENTE"}</span>
+              <button class="btn btn-secondary" type="button" data-edit-client="${esc(cliente.nombre)}">Editar</button>
+            </div>
+          </div>
+          <div class="client-grid">
+            <div>
+              <div class="client-column-title">Datos de contacto y facturación</div>
+              <div class="client-lines">
+                <div>📍 ${esc(cliente.direccion)}</div>
+                <div>📞 ${esc(cliente.tel)}</div>
+                <div>✉ ${esc(cliente.email)}</div>
+                <div>Razón social: ${esc(cliente.razon)}</div>
+              </div>
+            </div>
+            <div>
+              <div class="client-column-title">Estado de cuenta</div>
+              <div class="client-lines">
+                <div class="client-balance ${pending ? "negative" : ""}">${esc(cliente.saldo)}</div>
+                <div>${pending ? "Vencido" : "Pendiente cobro"}</div>
+                <div>Última factura: ${esc(cliente.ultima_factura)}</div>
+                <div class="${pending ? "negative" : ""}">${pending ? esc(cliente.prox_vencimiento) : `Próx. vencimiento: ${esc(cliente.prox_vencimiento)}`}</div>
+              </div>
+            </div>
+            <div>
+              <div class="client-column-title">Tarifas aplicables</div>
+              <div class="client-lines">
+                ${cliente.tarifas.map((tarifa) => `<div><span class="tarifa-pill pill-crew">${esc(tarifa)}</span></div>`).join("")}
+                ${cliente.descuento ? `<div>Descuento volumen: ${esc(cliente.descuento)}</div>` : ""}
+              </div>
+            </div>
+            <div>
+              <div class="client-column-title">Actividad</div>
+              <div class="client-lines">
+                <div>Servicios 2026: ${cliente.servicios_2026}</div>
+                <div>Facturado: ${esc(cliente.facturado)}</div>
+                <div>Horas: ${esc(cliente.horas)}</div>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderDashboard() {
+      app.innerHTML = `
+        ${pageHeader(
+          "Dashboard",
+          "Mayo 2026 · Acumulado mensual",
+          `<button class="btn btn-secondary" type="button">Mayo 2026 ▼</button>`
+        )}
+        <section class="kpi-grid dashboard-kpis">
+          <article class="card kpi-card" style="border-top-color:#3b82f6"><div class="kpi-label">Facturación mes</div><div class="kpi-value kpi-blue">€38.420</div><div class="kpi-note">↑ +12% vs abril</div></article>
+          <article class="card kpi-card"><div class="kpi-label">Servicios mes</div><div class="kpi-value">142</div><div class="kpi-note">↑ +8 vs abril</div></article>
+          <article class="card kpi-card" style="border-top-color:#10b981"><div class="kpi-label">Horas operativas</div><div class="kpi-value kpi-green">384h</div><div class="kpi-note">Promedio: 2.7h/s</div></article>
+          <article class="card kpi-card" style="border-top-color:#f59e0b"><div class="kpi-label">Fondeo / OPL</div><div class="kpi-value kpi-amber">18</div><div class="kpi-note">12.6% del tot</div></article>
+          <article class="card kpi-card"><div class="kpi-label">Crew operados</div><div class="kpi-value">286</div><div class="kpi-note">tripulantes</div></article>
+        </section>
+        <section class="chart-grid">
+          <article class="card chart-card">
+            <h2 class="chart-title">Facturación por cliente (€)</h2>
+            <canvas id="billingChart" height="220"></canvas>
+          </article>
+          <article class="card chart-card">
+            <h2 class="chart-title">Tipo de servicio</h2>
+            <div class="chart-content">
+              <canvas id="donutChart" width="220" height="220"></canvas>
+              <div class="legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span><span>Crew</span><strong>48% (68)</strong></div>
+                <div class="legend-item"><span class="legend-dot" style="background:#1e3a5f"></span><span>Carga</span><strong>25% (36)</strong></div>
+                <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span><span>Práctico</span><strong>15% (21)</strong></div>
+                <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>Fondeo/OPL</span><strong>12% (17)</strong></div>
+              </div>
+            </div>
+          </article>
+        </section>
+        <section class="chart-grid">
+          <article class="card chart-card">
+            <h2 class="chart-title">Servicios por cliente</h2>
+            <canvas id="servicesChart" height="220"></canvas>
+          </article>
+          <article class="card chart-card">
+            <h2 class="chart-title">Horas operativas por cliente</h2>
+            <table class="hours-table">
+              <thead><tr><th>Cliente</th><th>Crew</th><th>Carga</th><th>OPL</th><th>Total</th></tr></thead>
+              <tbody>
+                <tr><td>Marítima Sur</td><td>64h</td><td>32h</td><td>32h</td><td><strong>128h</strong></td></tr>
+                <tr><td>Transitarios</td><td>42h</td><td>18h</td><td>24h</td><td><strong>84h</strong></td></tr>
+                <tr><td>Port Authority</td><td>38h</td><td>12h</td><td>8h</td><td><strong>58h</strong></td></tr>
+                <tr><td>Agencia Central</td><td>22h</td><td>8h</td><td>0h</td><td><strong>30h</strong></td></tr>
+                <tr class="total-row"><td>Total</td><td>166h</td><td>70h</td><td>64h</td><td>384h</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+      `;
+      requestAnimationFrame(drawCharts);
+    }
+
+    function openDrawer(id, source) {
+      state.selectedService = source === "registro"
+        ? normalizeRegistro(REGISTRO.find((item) => item.id === id))
+        : SERVICIOS.find((item) => item.id === id);
+      state.drawerTab = "detalle";
+      renderDrawer();
+      drawer.classList.add("open");
+      drawerBackdrop.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function normalizeRegistro(item) {
+      return {
+        ...item,
+        eta: "Finalizado",
+        estado: "facturado",
+        fecha: item.fecha,
+        crew: item.servicio.includes("crew") ? { in: 2, out: 2, nacionalidad: "Filipina / España", destino_out: "Aeropuerto Gibraltar" } : null,
+        carga: item.servicio.includes("carga") ? { bultos: 18, peso: 920, descripcion: "Material técnico", adr: false, proveedor: "Proveedor Marítimo S.A." } : null,
+        lancha: "Lancha Nº 3 · Patrón R. Mora",
+        posicion: "Servicio cerrado",
+        notas: "Expediente facturado y archivado en registro comercial.",
+        alertas: []
+      };
+    }
+
+    function renderDrawer() {
+      const servicio = state.selectedService;
+      if (!servicio) return;
+      drawer.innerHTML = `
+        <div class="drawer-header">
+          <button class="drawer-close" type="button" id="closeDrawerBtn">×</button>
+          <div class="drawer-exp">EXPEDIENTE ${esc(servicio.id)}</div>
+          <h2 class="drawer-title">${esc(servicio.buque)}</h2>
+        </div>
+        <div class="drawer-tabs">
+          <button class="drawer-tab ${state.drawerTab === "detalle" ? "active" : ""}" type="button" data-drawer-tab="detalle">Detalle servicio</button>
+          <button class="drawer-tab ${state.drawerTab === "documentos" ? "active" : ""}" type="button" data-drawer-tab="documentos">Documentos</button>
+        </div>
+        <div class="drawer-body">
+          ${state.drawerTab === "detalle" ? detailTab(servicio) : documentsTab(servicio)}
+        </div>
+        <div class="drawer-footer">${drawerActions(servicio)}</div>
+      `;
+
+      document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
+      document.querySelectorAll("[data-drawer-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.drawerTab = button.dataset.drawerTab;
+          renderDrawer();
+        });
+      });
+      document.querySelectorAll("[data-download-doc]").forEach((button) => {
+        button.addEventListener("click", () => showToast("📄 Descarga simulada en demo."));
+      });
+      const finishBtn = document.getElementById("finishServiceBtn");
+      if (finishBtn) finishBtn.addEventListener("click", finishService);
+      const invoiceBtn = document.getElementById("emitInvoiceBtn");
+      if (invoiceBtn) invoiceBtn.addEventListener("click", emitInvoice);
+      const viewInvoiceBtn = document.getElementById("viewInvoiceBtn");
+      if (viewInvoiceBtn) viewInvoiceBtn.addEventListener("click", () => {
+        const item = REGISTRO.find((registro) => registro.id === servicio.id);
+        openInvoiceModal(item?.factura || "#F-2026-0312", servicio.id);
+      });
+    }
+
+    function detailTab(servicio) {
+      return `
+        <section class="meta-grid">
+          <div><div class="meta-label">ETA</div><div class="meta-value">${esc(servicio.eta)} · ${esc(servicio.fecha)}</div></div>
+          <div><div class="meta-label">Agente</div><div class="meta-value">${esc(servicio.agente)}</div></div>
+          <div><div class="meta-label">Estado</div><div class="meta-value">${estadoBadge(servicio.estado)}</div></div>
+          <div><div class="meta-label">Buque / Bandera</div><div class="meta-value">${esc(servicio.buque)} · ${servicio.bandera || "🇵🇦"} ${esc(servicio.pais || "Panama")}</div></div>
+          <div><div class="meta-label">Lancha asignada</div><div class="meta-value">${esc(servicio.lancha)}</div></div>
+          <div><div class="meta-label">Posición</div><div class="meta-value">${esc(servicio.posicion)}</div></div>
+        </section>
+        ${servicio.alertas?.length ? `<section class="detail-section"><h3 class="section-title">⚠ ALERTAS ACTIVAS</h3>${alertasMarkup(servicio.alertas)}</section>` : ""}
+        ${servicio.crew ? crewDetail(servicio) : ""}
+        ${servicio.carga ? cargoDetail(servicio) : ""}
+        ${servicio.servicio?.includes("fondeo") ? fondeoDetail() : ""}
+        <section class="detail-section">
+          <h3 class="section-title">🗒 NOTAS OPERATIVAS</h3>
+          <div class="notes-box">"${esc(servicio.notas)}"</div>
+        </section>
+      `;
+    }
+
+    function crewDetail(servicio) {
+      const label = servicio.servicio.includes("practico") ? "🎓 SERVICIO DE PRÁCTICO" : "👤 SERVICIO DE CREW";
+      const inLabel = servicio.servicio.includes("practico") ? "Práctico IN" : "Crew IN";
+      return `
+        <section class="detail-section">
+          <h3 class="section-title">${label}</h3>
+          <div class="service-box">
+            <div class="service-box-top"><span>${inLabel}</span><span class="service-box-count">${servicio.crew.in} pax</span></div>
+            <div class="service-box-meta">
+              <div><span>Tripulantes</span>${servicio.crew.in}</div>
+              <div><span>Nacionalidad</span>${esc(servicio.crew.nacionalidad || "España")}</div>
+              <div><span>Documentos</span>Verificados ✓</div>
+            </div>
+          </div>
+          ${servicio.crew.out ? `
+            <div class="service-box">
+              <div class="service-box-top"><span>Crew OUT</span><span class="service-box-count">${servicio.crew.out} pax</span></div>
+              <div class="service-box-meta">
+                <div><span>Tripulantes</span>${servicio.crew.out}</div>
+                <div><span>Destino</span>${esc(servicio.crew.destino_out || "Aeropuerto Gibraltar")}</div>
+                <div><span>Documentos</span>Verificados ✓</div>
+              </div>
+            </div>
+          ` : ""}
+        </section>
+      `;
+    }
+
+    function cargoDetail(servicio) {
+      return `
+        <section class="detail-section">
+          <h3 class="section-title">📦 SERVICIO DE CARGA</h3>
+          <div class="service-box">
+            <div class="service-box-top">
+              <span>Cargador: ${esc(servicio.carga.proveedor)}</span>
+              <span class="service-box-count">${servicio.carga.bultos} btos · ${formatNumber(servicio.carga.peso)} kg</span>
+            </div>
+            <div class="service-box-meta">
+              <div><span>Bultos</span>${servicio.carga.bultos}</div>
+              <div><span>Peso total</span>${formatNumber(servicio.carga.peso)} kg</div>
+              <div><span>Descripción</span>${esc(servicio.carga.descripcion)}</div>
+              <div><span>ADR</span>${servicio.carga.adr ? "Sí" : "No"}</div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function fondeoDetail() {
+      return `
+        <section class="detail-section">
+          <h3 class="section-title">⚓ SERVICIO DE FONDEO / OPL</h3>
+          <div class="service-box">
+            <div class="service-box-top"><span>Operación en fondeo exterior</span><span class="service-box-count">4h</span></div>
+            <div class="service-box-meta">
+              <div><span>Zona</span>Fondeo exterior</div>
+              <div><span>Ventana</span>10:30 - 14:30</div>
+              <div><span>Estado</span>Completado</div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function documentsTab(servicio) {
+      return `
+        <div class="document-list">
+          <div class="document-row"><span>📄 Albarán servicio ${esc(servicio.id)}.pdf</span><button class="btn btn-secondary" type="button" data-download-doc>Descargar</button></div>
+          <div class="document-row"><span>📄 Manifiesto tripulación ${esc(servicio.buque)}.pdf</span><button class="btn btn-secondary" type="button" data-download-doc>Descargar</button></div>
+          <div class="document-row"><span>📄 DUA exportación temporal.pdf</span><button class="btn btn-secondary" type="button" data-download-doc>Descargar</button></div>
+        </div>
+      `;
+    }
+
+    function drawerActions(servicio) {
+      if (servicio.estado === "facturado") {
+        return `<button class="btn btn-primary" type="button" id="viewInvoiceBtn">Ver factura</button>`;
+      }
+      if (servicio.estado === "finalizado") {
+        return `<button class="btn btn-secondary" type="button">Registrar incidencia</button><button class="btn btn-primary" type="button" id="viewInvoiceBtn">Ver factura</button>`;
+      }
+      return `
+        <button class="btn btn-secondary" type="button">Registrar incidencia</button>
+        <button class="btn btn-outline-success" type="button" id="finishServiceBtn">Marcar como Finalizado</button>
+        <button class="btn btn-primary" type="button" id="emitInvoiceBtn">Emitir factura</button>
+      `;
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove("open");
+      drawerBackdrop.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function finishService() {
+      const servicio = SERVICIOS.find((item) => item.id === state.selectedService.id);
+      if (servicio) servicio.estado = "finalizado";
+      closeDrawer();
+      render();
+    }
+
+    function emitInvoice() {
+      const servicio = SERVICIOS.find((item) => item.id === state.selectedService.id);
+      if (!servicio) return;
+      servicio.estado = "facturado";
+      REGISTRO.unshift({
+        id: servicio.id,
+        fecha: servicio.fecha,
+        buque: servicio.buque,
+        bandera: servicio.bandera,
+        pais: servicio.pais,
+        naviera: servicio.naviera,
+        agente: servicio.agente,
+        servicio: servicio.servicio,
+        resumen: resumenServicio(servicio),
+        factura: nextInvoiceNumber(),
+        importe: importeEstimado(servicio),
+        estado: "facturado"
+      });
+      closeDrawer();
+      showToast("✅ Factura emitida. Expediente movido a Registro de servicios.");
+      render();
+    }
+
+    function nextInvoiceNumber() {
+      const number = 313 + REGISTRO.length;
+      return `#F-2026-${String(number).padStart(4, "0")}`;
+    }
+
+    function importeEstimado(servicio) {
+      if (servicio.servicio.includes("fondeo")) return "€2.100,00";
+      if (servicio.servicio.includes("carga")) return servicio.carga?.peso > 2000 ? "€1.240,00" : "€860,00";
+      if (servicio.servicio.includes("practico")) return "€320,00";
+      return "€480,00";
+    }
+
+    function openNewServiceModal() {
+      const modal = document.getElementById("serviceModal");
+      modal.innerHTML = `
+        <form class="modal" id="newServiceForm">
+          <div class="modal-header">
+            <h2 class="modal-title">Nuevo servicio</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field full"><label>Buque *</label><input class="input" name="buque" required placeholder="Nombre del buque"></div>
+              <div class="field"><label>ETA *</label><input class="input" name="eta" type="datetime-local" required></div>
+              <div class="field"><label>Agente *</label><select class="select" name="agente" required><option>Marítima Sur S.L.</option><option>Transitarios del Sur</option><option>Agencia Norte S.A.</option><option>Port Authority</option></select></div>
+              <div class="field"><label>Tipo servicio *</label><select class="select" name="tipo" required><option value="crew">Crew</option><option value="carga">Carga</option><option value="practico">Práctico</option><option value="fondeo">Fondeo/OPL</option></select></div>
+              <div class="field"><label>Tripulantes IN</label><input class="input" name="crewIn" type="number" min="0" value="0"></div>
+              <div class="field"><label>Tripulantes OUT</label><input class="input" name="crewOut" type="number" min="0" value="0"></div>
+              <div class="field full"><label>Notas</label><textarea class="textarea" name="notas" placeholder="Notas operativas"></textarea></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Crear servicio →</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      document.getElementById("newServiceForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        addService(form);
+        modal.classList.remove("open");
+      });
+    }
+
+    function addService(form) {
+      const dateValue = form.get("eta");
+      const date = dateValue ? new Date(dateValue) : new Date();
+      const tipo = form.get("tipo");
+      const nextId = 246 + SERVICIOS.length;
+      SERVICIOS.unshift({
+        id: `#2026-${String(nextId).padStart(4, "0")}`,
+        buque: form.get("buque"),
+        bandera: "🇵🇦",
+        pais: "Panama",
+        naviera: "Pendiente naviera",
+        eta: date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+        fecha: "22 May 2026",
+        agente: form.get("agente"),
+        servicio: [tipo],
+        estado: "nominado",
+        crew: ["crew", "practico"].includes(tipo) ? {
+          in: Number(form.get("crewIn") || 0),
+          out: Number(form.get("crewOut") || 0),
+          nacionalidad: tipo === "practico" ? "España" : "Filipina / India",
+          destino_out: "Aeropuerto Gibraltar"
+        } : null,
+        carga: tipo === "carga" ? { bultos: 8, peso: 640, descripcion: "Repuestos motor", adr: false, proveedor: "Proveedor Marítimo S.A." } : null,
+        lancha: "Lancha Nº 3 · Patrón R. Mora",
+        posicion: "Muelle Sur · Atraque 7",
+        notas: form.get("notas") || "Servicio creado desde demo. Pendiente confirmación operativa.",
+        alertas: [],
+        eta_status: "a_tiempo"
+      });
+      state.filter = "todos";
+      render();
+    }
+
+    function openClientModal(cliente = null) {
+      const modal = document.getElementById("clientModal");
+      modal.innerHTML = `
+        <form class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">${cliente ? "Editar cliente" : "Nuevo cliente"}</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field"><label>Nombre</label><input class="input" value="${esc(cliente?.nombre || "")}" placeholder="Razón comercial"></div>
+              <div class="field"><label>CIF</label><input class="input" value="${esc(cliente?.cif || "")}" placeholder="CIF"></div>
+              <div class="field"><label>Tipo</label><input class="input" value="${esc(cliente?.tipo || "")}" placeholder="Agencia / Transitario"></div>
+              <div class="field"><label>Teléfono</label><input class="input" value="${esc(cliente?.tel || "")}" placeholder="+34"></div>
+              <div class="field full"><label>Email</label><input class="input" value="${esc(cliente?.email || "")}" placeholder="facturacion@cliente.es"></div>
+              <div class="field full"><label>Dirección</label><input class="input" value="${esc(cliente?.direccion || "")}" placeholder="Dirección fiscal"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="btn btn-primary" type="button" data-close-modal>Guardar cambios</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+    }
+
+    function openInvoiceModal(invoice, exp) {
+      const modal = document.getElementById("invoiceModal");
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Vista de factura — simulada en demo</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <div class="invoice-preview">
+              <strong>${esc(invoice)}</strong><br>
+              Expediente ${esc(exp)}<br>
+              Puerto de Algeciras · ALS<br>
+              Servicio de lancha facturado y listo para revisión comercial.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" type="button" data-close-modal>Cerrar</button>
+          </div>
+        </div>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+    }
+
+    function attachModalClose(modal) {
+      modal.querySelectorAll("[data-close-modal]").forEach((button) => {
+        button.addEventListener("click", () => modal.classList.remove("open"));
+      });
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) modal.classList.remove("open");
+      }, { once: true });
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll(".modal-backdrop").forEach((modal) => modal.classList.remove("open"));
+    }
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      document.getElementById("toastStack").appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(24px)";
+        toast.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+        setTimeout(() => toast.remove(), 220);
+      }, 2500);
+    }
+
+    function drawCharts() {
+      drawHorizontalBar("billingChart", [
+        ["Marítima Sur", 22400, "€22.400"],
+        ["Transitarios Sur", 14700, "€14.700"],
+        ["Port Authority", 5200, "€5.200"],
+        ["Agencia Central", 3800, "€3.800"]
+      ], "#3b82f6");
+      drawHorizontalBar("servicesChart", [
+        ["Marítima Sur", 48, "48"],
+        ["Transitarios Sur", 31, "31"],
+        ["Port Authority", 21, "21"],
+        ["Agencia Central", 14, "14"]
+      ], "#10b981");
+      drawDonut("donutChart");
+    }
+
+    function setupCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, rect.width) * ratio;
+      canvas.height = Number(canvas.getAttribute("height")) * ratio;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      return { ctx, width: rect.width, height: Number(canvas.getAttribute("height")) };
+    }
+
+    function drawHorizontalBar(id, data, color) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.font = "600 12px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.textBaseline = "middle";
+      const max = Math.max(...data.map((item) => item[1]));
+      const left = 124;
+      const right = 82;
+      const barHeight = 16;
+      const gap = 42;
+      data.forEach((item, index) => {
+        const y = 34 + index * gap;
+        const barWidth = (width - left - right) * (item[1] / max);
+        ctx.fillStyle = "#374151";
+        ctx.fillText(item[0], 0, y + barHeight / 2);
+        ctx.fillStyle = "#e5e7eb";
+        roundRect(ctx, left, y, width - left - right, barHeight, 8);
+        ctx.fill();
+        ctx.fillStyle = color;
+        roundRect(ctx, left, y, barWidth, barHeight, 8);
+        ctx.fill();
+        ctx.fillStyle = "#111827";
+        ctx.textAlign = "right";
+        ctx.fillText(item[2], width - 4, y + barHeight / 2);
+        ctx.textAlign = "left";
+      });
+    }
+
+    function drawDonut(id) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+      const cx = width / 2;
+      const cy = height / 2;
+      const outer = Math.min(width, height) / 2 - 12;
+      const inner = outer * 0.58;
+      const segments = [
+        { value: 48, color: "#3b82f6" },
+        { value: 25, color: "#1e3a5f" },
+        { value: 15, color: "#10b981" },
+        { value: 12, color: "#f59e0b" }
+      ];
+      let start = -Math.PI / 2;
+      segments.forEach((segment) => {
+        const angle = (segment.value / 100) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, outer, start, start + angle);
+        ctx.arc(cx, cy, inner, start + angle, start, true);
+        ctx.closePath();
+        ctx.fillStyle = segment.color;
+        ctx.fill();
+        start += angle;
+      });
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(cx, cy, inner - 1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.font = "800 22px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("142", cx, cy - 8);
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "600 12px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.fillText("servicios", cx, cy + 16);
+      ctx.textAlign = "left";
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, height / 2, width / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("es-ES").format(value);
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+    window.addEventListener("resize", () => {
+      if (state.view === "dashboard") drawCharts();
+    });
+  </script>
+</body>
+</html>
