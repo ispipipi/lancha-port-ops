@@ -1151,8 +1151,160 @@
     }
 
     .mobile-ops-shell {
-      max-width: 520px;
+      max-width: 980px;
       margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(280px, 390px) minmax(280px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .phone-frame {
+      position: relative;
+      width: min(390px, 100%);
+      min-height: 780px;
+      margin: 0 auto;
+      padding: 12px;
+      border-radius: 34px;
+      background: #111827;
+      box-shadow: 0 24px 70px rgba(17, 24, 39, 0.32);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .phone-frame::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 102px;
+      height: 24px;
+      transform: translateX(-50%);
+      border-radius: 0 0 16px 16px;
+      background: #111827;
+      z-index: 3;
+    }
+
+    .phone-screen {
+      position: relative;
+      height: 756px;
+      overflow: hidden;
+      border-radius: 26px;
+      background: #f3f4f6;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .phone-status {
+      height: 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
+      color: #111827;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .phone-top {
+      padding: 14px 16px 16px;
+      color: #fff;
+      background: var(--bg-topbar);
+    }
+
+    .phone-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .phone-app-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .phone-app-subtitle {
+      margin: 4px 0 0;
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .phone-sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.16);
+      color: #bbf7d0;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .phone-content {
+      height: calc(100% - 34px - 142px - 66px);
+      overflow-y: auto;
+      padding: 12px;
+      scrollbar-width: thin;
+    }
+
+    .phone-bottom-nav {
+      height: 66px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2px;
+      padding: 7px 10px 10px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+    }
+
+    .phone-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .phone-nav-btn.active {
+      color: #1d4ed8;
+      background: #dbeafe;
+    }
+
+    .phone-nav-btn span {
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .phone-side-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .phone-side-card {
+      padding: 16px;
+    }
+
+    .phone-side-card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .phone-side-card p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .mobile-ops-hero {
@@ -1180,23 +1332,23 @@
     .mobile-action-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .mobile-action {
-      min-height: 72px;
+      min-height: 68px;
       justify-content: flex-start;
       align-items: flex-start;
       flex-direction: column;
-      padding: 12px;
+      padding: 10px;
       text-align: left;
       white-space: normal;
     }
 
     .mobile-action strong {
       display: block;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .mobile-action span {
@@ -1207,11 +1359,15 @@
       font-weight: 500;
     }
 
+    .btn-primary.mobile-action span {
+      color: #dbeafe;
+    }
+
     .mobile-kpis {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 7px;
+      margin-bottom: 12px;
     }
 
     .mobile-kpi {
@@ -1234,17 +1390,18 @@
     .mobile-kpi strong {
       display: block;
       margin-top: 5px;
+      color: var(--text-primary);
       font-size: 22px;
       line-height: 1;
     }
 
     .mobile-card-list {
       display: grid;
-      gap: 10px;
+      gap: 9px;
     }
 
     .mobile-service-card {
-      padding: 14px;
+      padding: 12px;
     }
 
     .mobile-card-head {
@@ -1325,7 +1482,8 @@
       .kpi-grid,
       .kpi-grid.dashboard-kpis,
       .chart-grid,
-      .client-grid {
+      .client-grid,
+      .mobile-ops-shell {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -1368,6 +1526,7 @@
       .kpi-grid.dashboard-kpis,
       .chart-grid,
       .client-grid,
+      .mobile-ops-shell,
       .form-grid,
       .meta-grid,
       .service-box-meta,
@@ -1377,6 +1536,19 @@
 
       .drawer {
         width: 100vw;
+      }
+
+      .phone-frame {
+        width: min(390px, calc(100vw - 100px));
+        min-height: 720px;
+      }
+
+      .phone-screen {
+        height: 696px;
+      }
+
+      .phone-side-panel {
+        display: none;
       }
     }
   </style>
@@ -1907,36 +2079,70 @@
       const conAlertas = activos.filter((servicio) => servicio.alertas.length).length;
       app.innerHTML = `
         <section class="mobile-ops-shell">
-          <div class="mobile-ops-hero">
-            <h1>Pizarra móvil patrón</h1>
-            <p>Órdenes activas para la lancha. Crea o actualiza expedientes desde WhatsApp, llamada telefónica o dictado de voz.</p>
+          <div class="phone-frame" aria-label="Simulación de celular del patrón">
+            <div class="phone-screen">
+              <div class="phone-status">
+                <span>09:42</span>
+                <span>5G ▰▰▰ 🔋</span>
+              </div>
+              <div class="phone-top">
+                <div class="phone-top-row">
+                  <div>
+                    <h1 class="phone-app-title">Pizarra móvil patrón</h1>
+                    <p class="phone-app-subtitle">Lancha Nº 3 · Puerto de Algeciras</p>
+                  </div>
+                  <span class="phone-sync-pill">● Sync</span>
+                </div>
+                <div class="mobile-kpis">
+                  <div class="mobile-kpi"><span>Órdenes</span><strong>${activos.length}</strong></div>
+                  <div class="mobile-kpi"><span>En ruta</span><strong>${enRuta}</strong></div>
+                  <div class="mobile-kpi"><span>Alertas</span><strong>${conAlertas}</strong></div>
+                </div>
+              </div>
+              <div class="phone-content">
+                <div class="mobile-action-grid">
+                  <button class="btn btn-primary mobile-action" type="button" id="mobileCreateBtn">
+                    <strong>+ WhatsApp</strong>
+                    <span>Pegar orden del cliente.</span>
+                  </button>
+                  <button class="btn btn-secondary mobile-action" type="button" id="mobileVoiceBtn">
+                    <strong>🎙 Voz</strong>
+                    <span>Dictar llamada.</span>
+                  </button>
+                  <button class="btn btn-secondary mobile-action" type="button" id="mobileUpdateBtn">
+                    <strong>↻ Update</strong>
+                    <span>Cambio ETA, pax o carga.</span>
+                  </button>
+                  <button class="btn btn-secondary mobile-action" type="button" id="mobileRefreshBtn">
+                    <strong>Actualizar</strong>
+                    <span>Sincronizar órdenes.</span>
+                  </button>
+                </div>
+                <div class="mobile-card-list">
+                  ${activos.map(mobileServiceCard).join("")}
+                </div>
+              </div>
+              <div class="phone-bottom-nav">
+                <button class="phone-nav-btn active" type="button" id="phoneOrdersBtn"><span>📋</span>Órdenes</button>
+                <button class="phone-nav-btn" type="button" id="phoneWhatsappBtn"><span>💬</span>WhatsApp</button>
+                <button class="phone-nav-btn" type="button" id="phoneVoiceBtn"><span>🎙</span>Voz</button>
+              </div>
+            </div>
           </div>
-          <div class="mobile-kpis">
-            <div class="mobile-kpi"><span>Órdenes</span><strong>${activos.length}</strong></div>
-            <div class="mobile-kpi"><span>En ruta</span><strong>${enRuta}</strong></div>
-            <div class="mobile-kpi"><span>Alertas</span><strong>${conAlertas}</strong></div>
-          </div>
-          <div class="mobile-action-grid">
-            <button class="btn btn-primary mobile-action" type="button" id="mobileCreateBtn">
-              <strong>+ Crear desde WhatsApp</strong>
-              <span>Pegar texto del cliente y generar expediente.</span>
-            </button>
-            <button class="btn btn-secondary mobile-action" type="button" id="mobileVoiceBtn">
-              <strong>🎙 Crear por voz</strong>
-              <span>Dictar llamada o cargar ejemplo de voz.</span>
-            </button>
-            <button class="btn btn-secondary mobile-action" type="button" id="mobileUpdateBtn">
-              <strong>↻ Update recibido</strong>
-              <span>Pegar cambio de ETA, pax, carga o muelle.</span>
-            </button>
-            <button class="btn btn-secondary mobile-action" type="button" id="mobileRefreshBtn">
-              <strong>Actualizar pizarra</strong>
-              <span>Sincronización simulada con operaciones.</span>
-            </button>
-          </div>
-          <div class="mobile-card-list">
-            ${activos.map(mobileServiceCard).join("")}
-          </div>
+          <aside class="phone-side-panel">
+            <div class="card phone-side-card">
+              <h2>Entorno móvil del patrón</h2>
+              <p>Esta vista simula el celular a bordo: el patrón revisa órdenes activas, confirma salida, y transforma mensajes de WhatsApp o llamadas en expedientes operativos.</p>
+            </div>
+            <div class="card phone-side-card">
+              <h2>Flujo demo</h2>
+              <div class="workflow-steps">
+                <div class="workflow-step"><span class="step-dot">1</span><div><strong>Recibe orden</strong><br>Cliente envía WhatsApp o llama directamente.</div></div>
+                <div class="workflow-step"><span class="step-dot">2</span><div><strong>Pega o dicta</strong><br>El móvil interpreta buque, ETA, servicio y cantidades.</div></div>
+                <div class="workflow-step"><span class="step-dot">3</span><div><strong>Crea o modifica</strong><br>La pizarra se actualiza al instante para operaciones.</div></div>
+              </div>
+            </div>
+          </aside>
         </section>
       `;
 
@@ -1944,6 +2150,9 @@
       document.getElementById("mobileVoiceBtn").addEventListener("click", () => openMobileMessageModal("voz"));
       document.getElementById("mobileUpdateBtn").addEventListener("click", () => openMobileMessageModal("update"));
       document.getElementById("mobileRefreshBtn").addEventListener("click", () => showToast("Pizarra móvil actualizada. Órdenes sincronizadas con operaciones."));
+      document.getElementById("phoneOrdersBtn").addEventListener("click", () => showToast("Ya estás viendo las órdenes activas de la lancha."));
+      document.getElementById("phoneWhatsappBtn").addEventListener("click", () => openMobileMessageModal("crear"));
+      document.getElementById("phoneVoiceBtn").addEventListener("click", () => openMobileMessageModal("voz"));
       document.querySelectorAll("[data-mobile-detail]").forEach((button) => {
         button.addEventListener("click", () => openDrawer(button.dataset.mobileDetail, "servicios"));
       });
