@@ -1076,6 +1076,80 @@
       color: var(--text-primary);
     }
 
+    .demo-note {
+      margin: 0 0 14px;
+      padding: 11px 13px;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .filter-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: -6px 0 14px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .workflow-steps {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .workflow-step {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .step-dot {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .checkbox-line,
+    .radio-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
     @media (max-width: 1100px) {
       .kpi-grid,
       .kpi-grid.dashboard-kpis,
@@ -1182,6 +1256,7 @@
   <div class="modal-backdrop" id="serviceModal"></div>
   <div class="modal-backdrop" id="clientModal"></div>
   <div class="modal-backdrop" id="invoiceModal"></div>
+  <div class="modal-backdrop" id="workflowModal"></div>
   <div class="toast-stack" id="toastStack"></div>
 
   <script>
@@ -1272,11 +1347,38 @@
         servicios_2026: 31, facturado: "€14.700", horas: "84h" }
     ];
 
+    const DASHBOARD_MONTHS = {
+      "Mayo 2026": {
+        facturacion: "€38.420", facturacionNote: "↑ +12% vs abril", servicios: "142", serviciosNote: "↑ +8 vs abril",
+        horas: "384h", horasNote: "Promedio: 2.7h/s", fondeo: "18", fondeoNote: "12.6% del tot", crew: "286",
+        billing: [["Marítima Sur", 22400, "€22.400"], ["Transitarios Sur", 14700, "€14.700"], ["Port Authority", 5200, "€5.200"], ["Agencia Central", 3800, "€3.800"]],
+        services: [["Marítima Sur", 48, "48"], ["Transitarios Sur", 31, "31"], ["Port Authority", 21, "21"], ["Agencia Central", 14, "14"]],
+        donut: [{ label: "Crew", value: 48, count: 68, color: "#3b82f6" }, { label: "Carga", value: 25, count: 36, color: "#1e3a5f" }, { label: "Práctico", value: 15, count: 21, color: "#10b981" }, { label: "Fondeo/OPL", value: 12, count: 17, color: "#f59e0b" }]
+      },
+      "Abril 2026": {
+        facturacion: "€34.260", facturacionNote: "↑ +5% vs marzo", servicios: "134", serviciosNote: "↑ +11 vs marzo",
+        horas: "351h", horasNote: "Promedio: 2.6h/s", fondeo: "15", fondeoNote: "11.1% del tot", crew: "254",
+        billing: [["Marítima Sur", 19800, "€19.800"], ["Transitarios Sur", 12600, "€12.600"], ["Port Authority", 4800, "€4.800"], ["Agencia Central", 3100, "€3.100"]],
+        services: [["Marítima Sur", 44, "44"], ["Transitarios Sur", 28, "28"], ["Port Authority", 19, "19"], ["Agencia Central", 12, "12"]],
+        donut: [{ label: "Crew", value: 46, count: 62, color: "#3b82f6" }, { label: "Carga", value: 27, count: 36, color: "#1e3a5f" }, { label: "Práctico", value: 16, count: 21, color: "#10b981" }, { label: "Fondeo/OPL", value: 11, count: 15, color: "#f59e0b" }]
+      },
+      "Marzo 2026": {
+        facturacion: "€32.710", facturacionNote: "Base comparativa", servicios: "123", serviciosNote: "Mes cerrado",
+        horas: "329h", horasNote: "Promedio: 2.6h/s", fondeo: "13", fondeoNote: "10.5% del tot", crew: "231",
+        billing: [["Marítima Sur", 18200, "€18.200"], ["Transitarios Sur", 11100, "€11.100"], ["Port Authority", 4200, "€4.200"], ["Agencia Central", 2800, "€2.800"]],
+        services: [["Marítima Sur", 39, "39"], ["Transitarios Sur", 26, "26"], ["Port Authority", 17, "17"], ["Agencia Central", 11, "11"]],
+        donut: [{ label: "Crew", value: 45, count: 55, color: "#3b82f6" }, { label: "Carga", value: 28, count: 34, color: "#1e3a5f" }, { label: "Práctico", value: 16, count: 20, color: "#10b981" }, { label: "Fondeo/OPL", value: 11, count: 14, color: "#f59e0b" }]
+      }
+    };
+
     const state = {
       view: "pizarra",
       filter: "todos",
       selectedService: null,
-      drawerTab: "detalle"
+      drawerTab: "detalle",
+      pizarraCriteria: { agente: "todos", tipo: "todos", alertasOnly: false },
+      registroFilter: "todos",
+      dashboardMonth: "Mayo 2026"
     };
 
     const app = document.getElementById("app");
@@ -1357,6 +1459,164 @@
       `;
     }
 
+    function labelServicio(tipo) {
+      return {
+        crew: "Crew",
+        carga: "Carga",
+        practico: "Práctico",
+        fondeo: "Fondeo/OPL",
+        todos: "Todos"
+      }[tipo] || tipo;
+    }
+
+    function clearPizarraFilters() {
+      state.pizarraCriteria = { agente: "todos", tipo: "todos", alertasOnly: false };
+      renderPizarra();
+      showToast("Filtros de Pizarra limpiados. Se muestran todos los servicios activos.");
+    }
+
+    function openPizarraFilterModal() {
+      const modal = document.getElementById("workflowModal");
+      modal.innerHTML = `
+        <form class="modal" id="pizarraFilterForm">
+          <div class="modal-header">
+            <h2 class="modal-title">Filtrar Pizarra</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <p class="demo-note">Simulación operativa: ajusta la pizarra por agente, tipo de servicio o alertas para priorizar la reunión de coordinación.</p>
+            <div class="form-grid">
+              <div class="field">
+                <label>Agente</label>
+                <select class="select" name="agente">
+                  <option value="todos">Todos los agentes</option>
+                  <option ${state.pizarraCriteria.agente === "Marítima Sur S.L." ? "selected" : ""}>Marítima Sur S.L.</option>
+                  <option ${state.pizarraCriteria.agente === "Transitarios del Sur" ? "selected" : ""}>Transitarios del Sur</option>
+                  <option ${state.pizarraCriteria.agente === "Agencia Norte S.A." ? "selected" : ""}>Agencia Norte S.A.</option>
+                  <option ${state.pizarraCriteria.agente === "Port Authority" ? "selected" : ""}>Port Authority</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Tipo de servicio</label>
+                <select class="select" name="tipo">
+                  <option value="todos">Todos los servicios</option>
+                  <option value="crew" ${state.pizarraCriteria.tipo === "crew" ? "selected" : ""}>Crew</option>
+                  <option value="carga" ${state.pizarraCriteria.tipo === "carga" ? "selected" : ""}>Carga</option>
+                  <option value="practico" ${state.pizarraCriteria.tipo === "practico" ? "selected" : ""}>Práctico</option>
+                  <option value="fondeo" ${state.pizarraCriteria.tipo === "fondeo" ? "selected" : ""}>Fondeo/OPL</option>
+                </select>
+              </div>
+              <label class="checkbox-line field full">
+                <input type="checkbox" name="alertasOnly" ${state.pizarraCriteria.alertasOnly ? "checked" : ""}>
+                Mostrar solo servicios con alertas operativas
+              </label>
+            </div>
+            <div class="workflow-steps">
+              <div class="workflow-step"><span class="step-dot">1</span><div><strong>Filtras la Pizarra</strong><br>El equipo ve solo lo que necesita resolver.</div></div>
+              <div class="workflow-step"><span class="step-dot">2</span><div><strong>Abres un expediente</strong><br>Desde la fila filtrada se revisan documentos, notas y estado.</div></div>
+              <div class="workflow-step"><span class="step-dot">3</span><div><strong>Cierras o facturas</strong><br>El servicio avanza de Nominado a Finalizado o Registro.</div></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" id="clearPizarraFiltersBtn">Limpiar</button>
+            <button class="btn btn-primary" type="submit">Aplicar filtro</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      document.getElementById("clearPizarraFiltersBtn").addEventListener("click", () => {
+        modal.classList.remove("open");
+        clearPizarraFilters();
+      });
+      document.getElementById("pizarraFilterForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        state.pizarraCriteria = {
+          agente: form.get("agente"),
+          tipo: form.get("tipo"),
+          alertasOnly: form.get("alertasOnly") === "on"
+        };
+        modal.classList.remove("open");
+        renderPizarra();
+        showToast(`Filtro aplicado: ${getPizarraRows().length} servicios visibles en Pizarra.`);
+      });
+    }
+
+    function openDateFilterModal() {
+      const modal = document.getElementById("workflowModal");
+      modal.innerHTML = `
+        <form class="modal" id="dateFilterForm">
+          <div class="modal-header">
+            <h2 class="modal-title">Filtrar fecha</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <p class="demo-note">Simulación de auditoría: selecciona un rango y el Registro se recalcula para revisar facturación por día o por tipo.</p>
+            <label class="radio-line"><input type="radio" name="registroFilter" value="todos" ${state.registroFilter === "todos" ? "checked" : ""}> Últimos 7 días · Todos los facturados</label>
+            <label class="radio-line"><input type="radio" name="registroFilter" value="21" ${state.registroFilter === "21" ? "checked" : ""}> 21 May 2026</label>
+            <label class="radio-line"><input type="radio" name="registroFilter" value="20" ${state.registroFilter === "20" ? "checked" : ""}> 20 May 2026</label>
+            <label class="radio-line"><input type="radio" name="registroFilter" value="crew" ${state.registroFilter === "crew" ? "checked" : ""}> Solo servicios Crew facturados</label>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Aplicar rango</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      document.getElementById("dateFilterForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        state.registroFilter = new FormData(event.currentTarget).get("registroFilter");
+        modal.classList.remove("open");
+        renderRegistro();
+        showToast(`Rango aplicado: ${getRegistroRows().length} expedientes facturados visibles.`);
+      });
+    }
+
+    function openMonthModal() {
+      const modal = document.getElementById("workflowModal");
+      modal.innerHTML = `
+        <form class="modal" id="monthForm">
+          <div class="modal-header">
+            <h2 class="modal-title">Periodo del Dashboard</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <p class="demo-note">Simulación analítica: cambia el mes para mostrar cómo el cuadro ejecutivo recalcula KPIs y gráficos.</p>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Mes operativo</label>
+                <select class="select" name="month">
+                  <option ${state.dashboardMonth === "Mayo 2026" ? "selected" : ""}>Mayo 2026</option>
+                  <option ${state.dashboardMonth === "Abril 2026" ? "selected" : ""}>Abril 2026</option>
+                  <option ${state.dashboardMonth === "Marzo 2026" ? "selected" : ""}>Marzo 2026</option>
+                </select>
+              </div>
+            </div>
+            <div class="workflow-steps">
+              <div class="workflow-step"><span class="step-dot">K</span><div><strong>KPIs mensuales</strong><br>Facturación, servicios, horas, OPL y crew operados.</div></div>
+              <div class="workflow-step"><span class="step-dot">G</span><div><strong>Gráficos ejecutivos</strong><br>Distribución por cliente y tipo de servicio.</div></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Actualizar Dashboard</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      document.getElementById("monthForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        state.dashboardMonth = new FormData(event.currentTarget).get("month");
+        modal.classList.remove("open");
+        renderDashboard();
+        showToast(`Dashboard actualizado a ${state.dashboardMonth}. Datos recalculados en demo.`);
+      });
+    }
+
     function renderPizarra() {
       const rows = getPizarraRows();
       const nominados = SERVICIOS.filter((s) => s.estado === "nominado").length;
@@ -1366,9 +1626,10 @@
         ${pageHeader(
           "Pizarra de Operaciones",
           "Servicios activos · Estados: Nominado · Finalizado · Facturado",
-          `<button class="btn btn-secondary" type="button">Filtrar</button>
+          `<button class="btn btn-secondary" type="button" id="openPizarraFilterBtn">Filtrar</button>
            <button class="btn btn-primary" type="button" id="newServiceBtn">+ Nuevo servicio</button>`
         )}
+        ${pizarraFilterSummary()}
         <section class="kpi-grid">
           <article class="card kpi-card" style="border-top-color:#f59e0b">
             <div class="kpi-label">Nominados</div><div class="kpi-value">${nominados}</div><div class="kpi-note">En preparación</div>
@@ -1402,6 +1663,7 @@
         </section>
       `;
 
+      document.getElementById("openPizarraFilterBtn").addEventListener("click", openPizarraFilterModal);
       document.getElementById("newServiceBtn").addEventListener("click", openNewServiceModal);
       document.querySelectorAll(".tab-btn").forEach((button) => {
         button.addEventListener("click", () => {
@@ -1423,8 +1685,27 @@
     function getPizarraRows() {
       return SERVICIOS.filter((servicio) => {
         if (servicio.estado === "facturado") return false;
-        return state.filter === "todos" ? true : servicio.estado === state.filter;
+        if (state.filter !== "todos" && servicio.estado !== state.filter) return false;
+        if (state.pizarraCriteria.agente !== "todos" && servicio.agente !== state.pizarraCriteria.agente) return false;
+        if (state.pizarraCriteria.tipo !== "todos" && !servicio.servicio.includes(state.pizarraCriteria.tipo)) return false;
+        if (state.pizarraCriteria.alertasOnly && !servicio.alertas.length) return false;
+        return true;
       });
+    }
+
+    function pizarraFilterSummary() {
+      const chips = [];
+      if (state.pizarraCriteria.agente !== "todos") chips.push(`Agente: ${state.pizarraCriteria.agente}`);
+      if (state.pizarraCriteria.tipo !== "todos") chips.push(`Servicio: ${labelServicio(state.pizarraCriteria.tipo)}`);
+      if (state.pizarraCriteria.alertasOnly) chips.push("Solo con alertas");
+      if (!chips.length) return "";
+      return `
+        <div class="filter-summary">
+          <span>Filtro operativo aplicado:</span>
+          ${chips.map((chip) => `<span class="filter-chip">${esc(chip)}</span>`).join("")}
+          <button class="btn-link" type="button" onclick="clearPizarraFilters()">Limpiar filtros</button>
+        </div>
+      `;
     }
 
     function renderServiceRow(servicio) {
@@ -1504,13 +1785,15 @@
     }
 
     function renderRegistro() {
+      const rows = getRegistroRows();
       app.innerHTML = `
         ${pageHeader(
           "Registro de Servicios",
           "Historial de expedientes facturados",
           `<button class="btn btn-secondary" type="button" id="exportBtn">⬇ Exportar</button>
-           <button class="btn btn-secondary" type="button">Filtrar fecha</button>`
+           <button class="btn btn-secondary" type="button" id="dateFilterBtn">Filtrar fecha</button>`
         )}
+        ${registroFilterSummary()}
         <section class="card table-card">
           <table>
             <thead>
@@ -1519,7 +1802,7 @@
               </tr>
             </thead>
             <tbody>
-              ${REGISTRO.map((item) => `
+              ${rows.length ? rows.map((item) => `
                 <tr class="clickable" data-registro-id="${esc(item.id)}">
                   <td><strong>${esc(item.id)}</strong></td>
                   <td>${esc(item.fecha)}</td>
@@ -1531,13 +1814,14 @@
                   <td><strong>${esc(item.importe)}</strong></td>
                   <td>${estadoBadge("facturado")}</td>
                 </tr>
-              `).join("")}
+              `).join("") : `<tr><td colspan="9"><div class="empty-state">No hay facturas para el rango seleccionado.</div></td></tr>`}
             </tbody>
           </table>
         </section>
       `;
 
-      document.getElementById("exportBtn").addEventListener("click", () => showToast("📊 Exportación Excel simulada en demo."));
+      document.getElementById("exportBtn").addEventListener("click", () => showToast(`📊 Exportación Excel simulada: ${rows.length} expedientes incluidos.`));
+      document.getElementById("dateFilterBtn").addEventListener("click", openDateFilterModal);
       document.querySelectorAll("[data-registro-id]").forEach((row) => {
         row.addEventListener("click", () => openDrawer(row.dataset.registroId, "registro"));
       });
@@ -1547,6 +1831,28 @@
           openInvoiceModal(button.dataset.invoice, button.dataset.exp);
         });
       });
+    }
+
+    function getRegistroRows() {
+      if (state.registroFilter === "21") return REGISTRO.filter((item) => item.fecha.startsWith("21 May"));
+      if (state.registroFilter === "20") return REGISTRO.filter((item) => item.fecha.startsWith("20 May"));
+      if (state.registroFilter === "crew") return REGISTRO.filter((item) => item.servicio.includes("crew"));
+      return REGISTRO;
+    }
+
+    function registroFilterSummary() {
+      const labels = {
+        todos: "Últimos 7 días · Todos los facturados",
+        "21": "Solo 21 May 2026",
+        "20": "Solo 20 May 2026",
+        crew: "Solo servicios Crew facturados"
+      };
+      return `
+        <div class="filter-summary">
+          <span>Rango de registro:</span>
+          <span class="filter-chip">${labels[state.registroFilter]}</span>
+        </div>
+      `;
     }
 
     function renderClientes() {
@@ -1624,18 +1930,19 @@
     }
 
     function renderDashboard() {
+      const data = dashboardData();
       app.innerHTML = `
         ${pageHeader(
           "Dashboard",
-          "Mayo 2026 · Acumulado mensual",
-          `<button class="btn btn-secondary" type="button">Mayo 2026 ▼</button>`
+          `${state.dashboardMonth} · Acumulado mensual`,
+          `<button class="btn btn-secondary" type="button" id="monthSelectorBtn">${state.dashboardMonth} ▼</button>`
         )}
         <section class="kpi-grid dashboard-kpis">
-          <article class="card kpi-card" style="border-top-color:#3b82f6"><div class="kpi-label">Facturación mes</div><div class="kpi-value kpi-blue">€38.420</div><div class="kpi-note">↑ +12% vs abril</div></article>
-          <article class="card kpi-card"><div class="kpi-label">Servicios mes</div><div class="kpi-value">142</div><div class="kpi-note">↑ +8 vs abril</div></article>
-          <article class="card kpi-card" style="border-top-color:#10b981"><div class="kpi-label">Horas operativas</div><div class="kpi-value kpi-green">384h</div><div class="kpi-note">Promedio: 2.7h/s</div></article>
-          <article class="card kpi-card" style="border-top-color:#f59e0b"><div class="kpi-label">Fondeo / OPL</div><div class="kpi-value kpi-amber">18</div><div class="kpi-note">12.6% del tot</div></article>
-          <article class="card kpi-card"><div class="kpi-label">Crew operados</div><div class="kpi-value">286</div><div class="kpi-note">tripulantes</div></article>
+          <article class="card kpi-card" style="border-top-color:#3b82f6"><div class="kpi-label">Facturación mes</div><div class="kpi-value kpi-blue">${data.facturacion}</div><div class="kpi-note">${data.facturacionNote}</div></article>
+          <article class="card kpi-card"><div class="kpi-label">Servicios mes</div><div class="kpi-value">${data.servicios}</div><div class="kpi-note">${data.serviciosNote}</div></article>
+          <article class="card kpi-card" style="border-top-color:#10b981"><div class="kpi-label">Horas operativas</div><div class="kpi-value kpi-green">${data.horas}</div><div class="kpi-note">${data.horasNote}</div></article>
+          <article class="card kpi-card" style="border-top-color:#f59e0b"><div class="kpi-label">Fondeo / OPL</div><div class="kpi-value kpi-amber">${data.fondeo}</div><div class="kpi-note">${data.fondeoNote}</div></article>
+          <article class="card kpi-card"><div class="kpi-label">Crew operados</div><div class="kpi-value">${data.crew}</div><div class="kpi-note">tripulantes</div></article>
         </section>
         <section class="chart-grid">
           <article class="card chart-card">
@@ -1647,10 +1954,7 @@
             <div class="chart-content">
               <canvas id="donutChart" width="220" height="220"></canvas>
               <div class="legend">
-                <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span><span>Crew</span><strong>48% (68)</strong></div>
-                <div class="legend-item"><span class="legend-dot" style="background:#1e3a5f"></span><span>Carga</span><strong>25% (36)</strong></div>
-                <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span><span>Práctico</span><strong>15% (21)</strong></div>
-                <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>Fondeo/OPL</span><strong>12% (17)</strong></div>
+                ${data.donut.map((item) => `<div class="legend-item"><span class="legend-dot" style="background:${item.color}"></span><span>${item.label}</span><strong>${item.value}% (${item.count})</strong></div>`).join("")}
               </div>
             </div>
           </article>
@@ -1675,6 +1979,7 @@
           </article>
         </section>
       `;
+      document.getElementById("monthSelectorBtn").addEventListener("click", openMonthModal);
       requestAnimationFrame(drawCharts);
     }
 
@@ -1739,9 +2044,11 @@
       if (invoiceBtn) invoiceBtn.addEventListener("click", emitInvoice);
       const viewInvoiceBtn = document.getElementById("viewInvoiceBtn");
       if (viewInvoiceBtn) viewInvoiceBtn.addEventListener("click", () => {
-        const item = REGISTRO.find((registro) => registro.id === servicio.id);
-        openInvoiceModal(item?.factura || "#F-2026-0312", servicio.id);
+        const item = REGISTRO.find((registro) => registro.id === servicio.id && registro.buque === servicio.buque);
+        openInvoiceModal(item?.factura || `#BORRADOR-${servicio.id.replace("#", "")}`, servicio.id);
       });
+      const incidentBtn = document.getElementById("incidentBtn");
+      if (incidentBtn) incidentBtn.addEventListener("click", () => openIncidentModal(servicio));
     }
 
     function detailTab(servicio) {
@@ -1844,13 +2151,73 @@
         return `<button class="btn btn-primary" type="button" id="viewInvoiceBtn">Ver factura</button>`;
       }
       if (servicio.estado === "finalizado") {
-        return `<button class="btn btn-secondary" type="button">Registrar incidencia</button><button class="btn btn-primary" type="button" id="viewInvoiceBtn">Ver factura</button>`;
+        return `<button class="btn btn-secondary" type="button" id="incidentBtn">Registrar incidencia</button><button class="btn btn-primary" type="button" id="viewInvoiceBtn">Ver factura</button>`;
       }
       return `
-        <button class="btn btn-secondary" type="button">Registrar incidencia</button>
+        <button class="btn btn-secondary" type="button" id="incidentBtn">Registrar incidencia</button>
         <button class="btn btn-outline-success" type="button" id="finishServiceBtn">Marcar como Finalizado</button>
         <button class="btn btn-primary" type="button" id="emitInvoiceBtn">Emitir factura</button>
       `;
+    }
+
+    function openIncidentModal(servicio) {
+      const modal = document.getElementById("workflowModal");
+      modal.innerHTML = `
+        <form class="modal" id="incidentForm">
+          <div class="modal-header">
+            <h2 class="modal-title">Registrar incidencia</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <p class="demo-note">Simulación de control: la incidencia queda asociada al expediente, visible en alertas y disponible para resolver antes de facturar.</p>
+            <div class="form-grid">
+              <div class="field">
+                <label>Expediente</label>
+                <input class="input" value="${esc(servicio.id)} · ${esc(servicio.buque)}" readonly>
+              </div>
+              <div class="field">
+                <label>Tipo incidencia</label>
+                <select class="select" name="tipo">
+                  <option value="sin_checklist">Checklist pendiente</option>
+                  <option value="eta_retrasada">ETA retrasada</option>
+                  <option value="cap_excedida">Capacidad excedida</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label>Nota operativa</label>
+                <textarea class="textarea" name="nota">Se avisa a coordinación y se deja seguimiento para el patrón asignado.</textarea>
+              </div>
+            </div>
+            <div class="workflow-steps">
+              <div class="workflow-step"><span class="step-dot">1</span><div><strong>Se registra la incidencia</strong><br>El expediente queda con alerta visible en Pizarra.</div></div>
+              <div class="workflow-step"><span class="step-dot">2</span><div><strong>Operaciones coordina</strong><br>Se revisa documentación, capacidad o ETA.</div></div>
+              <div class="workflow-step"><span class="step-dot">3</span><div><strong>Se continúa el cierre</strong><br>El servicio puede finalizarse o facturarse cuando esté resuelto.</div></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Guardar incidencia</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      document.getElementById("incidentForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const liveService = SERVICIOS.find((item) => item.id === servicio.id);
+        if (liveService && !liveService.alertas.includes(form.get("tipo"))) {
+          liveService.alertas.push(form.get("tipo"));
+        }
+        if (liveService) {
+          liveService.notas = `${liveService.notas} Incidencia demo: ${form.get("nota")}`;
+          state.selectedService = liveService;
+        }
+        modal.classList.remove("open");
+        renderDrawer();
+        render();
+        showToast(`⚠ Incidencia registrada en ${servicio.buque}. La alerta ya aparece en el flujo.`);
+      });
     }
 
     function closeDrawer() {
@@ -1863,6 +2230,7 @@
       const servicio = SERVICIOS.find((item) => item.id === state.selectedService.id);
       if (servicio) servicio.estado = "finalizado";
       closeDrawer();
+      showToast(`✅ ${servicio?.buque || "Servicio"} marcado como finalizado. Queda listo para facturación.`);
       render();
     }
 
@@ -1966,35 +2334,72 @@
         eta_status: "a_tiempo"
       });
       state.filter = "todos";
+      showToast(`✅ Servicio nominado para ${form.get("buque")}. Ya aparece en la Pizarra.`);
       render();
     }
 
     function openClientModal(cliente = null) {
       const modal = document.getElementById("clientModal");
       modal.innerHTML = `
-        <form class="modal">
+        <form class="modal" id="clientForm">
           <div class="modal-header">
             <h2 class="modal-title">${cliente ? "Editar cliente" : "Nuevo cliente"}</h2>
             <button class="modal-close" type="button" data-close-modal>×</button>
           </div>
           <div class="modal-body">
+            <p class="demo-note">Simulación comercial: al guardar, la ficha queda actualizada en pantalla y lista para usar en próximos servicios.</p>
             <div class="form-grid">
-              <div class="field"><label>Nombre</label><input class="input" value="${esc(cliente?.nombre || "")}" placeholder="Razón comercial"></div>
-              <div class="field"><label>CIF</label><input class="input" value="${esc(cliente?.cif || "")}" placeholder="CIF"></div>
-              <div class="field"><label>Tipo</label><input class="input" value="${esc(cliente?.tipo || "")}" placeholder="Agencia / Transitario"></div>
-              <div class="field"><label>Teléfono</label><input class="input" value="${esc(cliente?.tel || "")}" placeholder="+34"></div>
-              <div class="field full"><label>Email</label><input class="input" value="${esc(cliente?.email || "")}" placeholder="facturacion@cliente.es"></div>
-              <div class="field full"><label>Dirección</label><input class="input" value="${esc(cliente?.direccion || "")}" placeholder="Dirección fiscal"></div>
+              <div class="field"><label>Nombre</label><input class="input" name="nombre" required value="${esc(cliente?.nombre || "")}" placeholder="Razón comercial"></div>
+              <div class="field"><label>CIF</label><input class="input" name="cif" required value="${esc(cliente?.cif || "")}" placeholder="CIF"></div>
+              <div class="field"><label>Tipo</label><input class="input" name="tipo" value="${esc(cliente?.tipo || "Agencia Marítima")}" placeholder="Agencia / Transitario"></div>
+              <div class="field"><label>Teléfono</label><input class="input" name="tel" value="${esc(cliente?.tel || "+34 956 000 000")}" placeholder="+34"></div>
+              <div class="field full"><label>Email</label><input class="input" name="email" type="email" value="${esc(cliente?.email || "")}" placeholder="facturacion@cliente.es"></div>
+              <div class="field full"><label>Dirección</label><input class="input" name="direccion" value="${esc(cliente?.direccion || "Muelle comercial · Algeciras 11201")}" placeholder="Dirección fiscal"></div>
             </div>
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" type="button" data-close-modal>Cancelar</button>
-            <button class="btn btn-primary" type="button" data-close-modal>Guardar cambios</button>
+            <button class="btn btn-primary" type="submit">Guardar cambios</button>
           </div>
         </form>
       `;
       modal.classList.add("open");
       attachModalClose(modal);
+      document.getElementById("clientForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        saveClient(new FormData(event.currentTarget), cliente?.nombre || null);
+        modal.classList.remove("open");
+      });
+    }
+
+    function saveClient(form, originalName) {
+      const data = {
+        nombre: form.get("nombre"),
+        tipo: form.get("tipo") || "Agencia Marítima",
+        cif: form.get("cif"),
+        direccion: form.get("direccion"),
+        tel: form.get("tel"),
+        email: form.get("email"),
+        razon: `${form.get("nombre")} Servicios Portuarios S.L.`,
+        saldo: "€0,00",
+        estado_cuenta: "al_corriente",
+        ultima_factura: "Pendiente",
+        prox_vencimiento: "Sin vencimientos",
+        tarifas: ["Crew estándar", "Carga especial"],
+        descuento: null,
+        servicios_2026: 0,
+        facturado: "€0",
+        horas: "0h"
+      };
+      const index = CLIENTES.findIndex((item) => item.nombre === originalName);
+      if (index >= 0) {
+        CLIENTES[index] = { ...CLIENTES[index], ...data, estado_cuenta: CLIENTES[index].estado_cuenta, saldo: CLIENTES[index].saldo, ultima_factura: CLIENTES[index].ultima_factura, prox_vencimiento: CLIENTES[index].prox_vencimiento, tarifas: CLIENTES[index].tarifas, descuento: CLIENTES[index].descuento, servicios_2026: CLIENTES[index].servicios_2026, facturado: CLIENTES[index].facturado, horas: CLIENTES[index].horas };
+        showToast(`✅ Cliente ${data.nombre} actualizado. Cambios reflejados en la ficha comercial.`);
+      } else {
+        CLIENTES.unshift(data);
+        showToast(`✅ Cliente ${data.nombre} creado. Ya queda disponible para nuevos servicios.`);
+      }
+      renderClientes();
     }
 
     function openInvoiceModal(invoice, exp) {
@@ -2026,9 +2431,9 @@
       modal.querySelectorAll("[data-close-modal]").forEach((button) => {
         button.addEventListener("click", () => modal.classList.remove("open"));
       });
-      modal.addEventListener("click", (event) => {
+      modal.onclick = (event) => {
         if (event.target === modal) modal.classList.remove("open");
-      }, { once: true });
+      };
     }
 
     function closeAllModals() {
@@ -2048,20 +2453,15 @@
       }, 2500);
     }
 
+    function dashboardData() {
+      return DASHBOARD_MONTHS[state.dashboardMonth] || DASHBOARD_MONTHS["Mayo 2026"];
+    }
+
     function drawCharts() {
-      drawHorizontalBar("billingChart", [
-        ["Marítima Sur", 22400, "€22.400"],
-        ["Transitarios Sur", 14700, "€14.700"],
-        ["Port Authority", 5200, "€5.200"],
-        ["Agencia Central", 3800, "€3.800"]
-      ], "#3b82f6");
-      drawHorizontalBar("servicesChart", [
-        ["Marítima Sur", 48, "48"],
-        ["Transitarios Sur", 31, "31"],
-        ["Port Authority", 21, "21"],
-        ["Agencia Central", 14, "14"]
-      ], "#10b981");
-      drawDonut("donutChart");
+      const data = dashboardData();
+      drawHorizontalBar("billingChart", data.billing, "#3b82f6");
+      drawHorizontalBar("servicesChart", data.services, "#10b981");
+      drawDonut("donutChart", data.donut);
     }
 
     function setupCanvas(canvas) {
@@ -2104,7 +2504,7 @@
       });
     }
 
-    function drawDonut(id) {
+    function drawDonut(id, segments) {
       const canvas = document.getElementById(id);
       if (!canvas) return;
       const { ctx, width, height } = setupCanvas(canvas);
@@ -2112,12 +2512,7 @@
       const cy = height / 2;
       const outer = Math.min(width, height) / 2 - 12;
       const inner = outer * 0.58;
-      const segments = [
-        { value: 48, color: "#3b82f6" },
-        { value: 25, color: "#1e3a5f" },
-        { value: 15, color: "#10b981" },
-        { value: 12, color: "#f59e0b" }
-      ];
+      const total = segments.reduce((sum, segment) => sum + segment.count, 0);
       let start = -Math.PI / 2;
       segments.forEach((segment) => {
         const angle = (segment.value / 100) * Math.PI * 2;
@@ -2137,7 +2532,7 @@
       ctx.font = "800 22px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("142", cx, cy - 8);
+      ctx.fillText(String(total), cx, cy - 8);
       ctx.fillStyle = "#6b7280";
       ctx.font = "600 12px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
       ctx.fillText("servicios", cx, cy + 16);
