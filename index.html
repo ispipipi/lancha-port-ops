@@ -1150,6 +1150,177 @@
       font-weight: 650;
     }
 
+    .mobile-ops-shell {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .mobile-ops-hero {
+      padding: 16px;
+      border-radius: 8px;
+      background: var(--bg-topbar);
+      color: #fff;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .mobile-ops-hero h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    .mobile-ops-hero p {
+      margin: 6px 0 0;
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .mobile-action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-action {
+      min-height: 72px;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 12px;
+      text-align: left;
+      white-space: normal;
+    }
+
+    .mobile-action strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .mobile-action span {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 500;
+    }
+
+    .mobile-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-kpi {
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .mobile-kpi span {
+      display: block;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .mobile-kpi strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .mobile-card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mobile-service-card {
+      padding: 14px;
+    }
+
+    .mobile-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .mobile-card-title {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.15;
+      font-weight: 850;
+    }
+
+    .mobile-card-meta {
+      margin-top: 5px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .mobile-card-body {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+      color: var(--text-primary);
+      font-size: 13px;
+    }
+
+    .mobile-card-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .parsed-preview {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .parsed-preview strong {
+      font-size: 14px;
+    }
+
+    .parsed-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .parsed-item {
+      padding: 8px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .parsed-item span {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+    }
+
     @media (max-width: 1100px) {
       .kpi-grid,
       .kpi-grid.dashboard-kpis,
@@ -1229,6 +1400,9 @@
       <p class="nav-label">Operaciones</p>
       <button class="nav-item active" type="button" data-view="pizarra">
         <span class="nav-icon">📋</span><span class="nav-text">Pizarra de operaciones</span><span class="nav-badge" id="pizarraBadge">6</span>
+      </button>
+      <button class="nav-item" type="button" data-view="movil">
+        <span class="nav-icon">📱</span><span class="nav-text">Móvil patrón</span>
       </button>
       <button class="nav-item" type="button" data-view="registro">
         <span class="nav-icon">📁</span><span class="nav-text">Registro de servicios</span>
@@ -1442,6 +1616,7 @@
     function render() {
       updateBadge();
       if (state.view === "pizarra") renderPizarra();
+      if (state.view === "movil") renderMovilPatron();
       if (state.view === "registro") renderRegistro();
       if (state.view === "clientes") renderClientes();
       if (state.view === "dashboard") renderDashboard();
@@ -1724,6 +1899,326 @@
           <td class="table-action"><button class="btn-link" type="button" data-view-service="${esc(servicio.id)}">Ver →</button></td>
         </tr>
       `;
+    }
+
+    function renderMovilPatron() {
+      const activos = SERVICIOS.filter((servicio) => servicio.estado !== "facturado");
+      const enRuta = activos.filter((servicio) => servicio.eta_status === "en_ruta").length;
+      const conAlertas = activos.filter((servicio) => servicio.alertas.length).length;
+      app.innerHTML = `
+        <section class="mobile-ops-shell">
+          <div class="mobile-ops-hero">
+            <h1>Pizarra móvil patrón</h1>
+            <p>Órdenes activas para la lancha. Crea o actualiza expedientes desde WhatsApp, llamada telefónica o dictado de voz.</p>
+          </div>
+          <div class="mobile-kpis">
+            <div class="mobile-kpi"><span>Órdenes</span><strong>${activos.length}</strong></div>
+            <div class="mobile-kpi"><span>En ruta</span><strong>${enRuta}</strong></div>
+            <div class="mobile-kpi"><span>Alertas</span><strong>${conAlertas}</strong></div>
+          </div>
+          <div class="mobile-action-grid">
+            <button class="btn btn-primary mobile-action" type="button" id="mobileCreateBtn">
+              <strong>+ Crear desde WhatsApp</strong>
+              <span>Pegar texto del cliente y generar expediente.</span>
+            </button>
+            <button class="btn btn-secondary mobile-action" type="button" id="mobileVoiceBtn">
+              <strong>🎙 Crear por voz</strong>
+              <span>Dictar llamada o cargar ejemplo de voz.</span>
+            </button>
+            <button class="btn btn-secondary mobile-action" type="button" id="mobileUpdateBtn">
+              <strong>↻ Update recibido</strong>
+              <span>Pegar cambio de ETA, pax, carga o muelle.</span>
+            </button>
+            <button class="btn btn-secondary mobile-action" type="button" id="mobileRefreshBtn">
+              <strong>Actualizar pizarra</strong>
+              <span>Sincronización simulada con operaciones.</span>
+            </button>
+          </div>
+          <div class="mobile-card-list">
+            ${activos.map(mobileServiceCard).join("")}
+          </div>
+        </section>
+      `;
+
+      document.getElementById("mobileCreateBtn").addEventListener("click", () => openMobileMessageModal("crear"));
+      document.getElementById("mobileVoiceBtn").addEventListener("click", () => openMobileMessageModal("voz"));
+      document.getElementById("mobileUpdateBtn").addEventListener("click", () => openMobileMessageModal("update"));
+      document.getElementById("mobileRefreshBtn").addEventListener("click", () => showToast("Pizarra móvil actualizada. Órdenes sincronizadas con operaciones."));
+      document.querySelectorAll("[data-mobile-detail]").forEach((button) => {
+        button.addEventListener("click", () => openDrawer(button.dataset.mobileDetail, "servicios"));
+      });
+      document.querySelectorAll("[data-mobile-edit]").forEach((button) => {
+        button.addEventListener("click", () => openMobileMessageModal("update", button.dataset.mobileEdit));
+      });
+      document.querySelectorAll("[data-mobile-route]").forEach((button) => {
+        button.addEventListener("click", () => markMobileRoute(button.dataset.mobileRoute));
+      });
+    }
+
+    function mobileServiceCard(servicio) {
+      return `
+        <article class="card mobile-service-card ${servicio.alertas.length ? "alert-row" : ""}">
+          <div class="mobile-card-head">
+            <div>
+              <h2 class="mobile-card-title">${esc(servicio.buque)}</h2>
+              <div class="mobile-card-meta">${esc(servicio.id)} · ETA ${esc(servicio.eta)} · ${esc(servicio.posicion)}</div>
+            </div>
+            ${estadoBadge(servicio.estado)}
+          </div>
+          <div class="service-pills">${servicioPills(servicio.servicio)}</div>
+          <div class="mobile-card-body">
+            <div><strong>Agente:</strong> ${esc(servicio.agente)}</div>
+            <div><strong>Resumen:</strong> ${esc(resumenServicio(servicio))}</div>
+            <div><strong>Lancha:</strong> ${esc(servicio.lancha)}</div>
+            ${servicio.alertas.length ? `<div>${alertasMarkup(servicio.alertas)}</div>` : ""}
+          </div>
+          <div class="mobile-card-actions">
+            <button class="btn btn-secondary" type="button" data-mobile-detail="${esc(servicio.id)}">Ver</button>
+            <button class="btn btn-secondary" type="button" data-mobile-edit="${esc(servicio.id)}">Modificar</button>
+            <button class="btn btn-primary" type="button" data-mobile-route="${esc(servicio.id)}">En ruta</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function markMobileRoute(id) {
+      const servicio = SERVICIOS.find((item) => item.id === id);
+      if (!servicio) return;
+      servicio.eta_status = "en_ruta";
+      servicio.notas = `${servicio.notas} Patrón confirma salida/en ruta desde móvil.`;
+      renderMovilPatron();
+      showToast(`🚤 ${servicio.buque}: estado operativo actualizado a En ruta.`);
+    }
+
+    function openMobileMessageModal(mode, selectedId = "") {
+      const modal = document.getElementById("workflowModal");
+      const isUpdate = mode === "update";
+      const isVoice = mode === "voz";
+      const title = isUpdate ? "Actualizar expediente desde mensaje" : isVoice ? "Crear expediente por voz" : "Crear expediente desde WhatsApp";
+      const initialText = isVoice ? sampleVoiceText() : "";
+      modal.innerHTML = `
+        <form class="modal" id="mobileMessageForm">
+          <div class="modal-header">
+            <h2 class="modal-title">${title}</h2>
+            <button class="modal-close" type="button" data-close-modal>×</button>
+          </div>
+          <div class="modal-body">
+            <p class="demo-note">${isUpdate ? "Pega el update recibido por WhatsApp o llamada. Si el mensaje trae buque/expediente, se detecta automáticamente." : "Pega el mensaje del cliente o dicta la llamada. El demo extrae buque, ETA, agente, servicio, pasajeros/carga y notas."}</p>
+            <div class="form-grid">
+              ${isUpdate ? `
+                <div class="field full">
+                  <label>Servicio a modificar</label>
+                  <select class="select" name="serviceId">
+                    <option value="">Detectar por texto</option>
+                    ${SERVICIOS.filter((item) => item.estado !== "facturado").map((item) => `<option value="${esc(item.id)}" ${item.id === selectedId ? "selected" : ""}>${esc(item.id)} · ${esc(item.buque)}</option>`).join("")}
+                  </select>
+                </div>
+              ` : ""}
+              <div class="field full">
+                <label>Texto WhatsApp / llamada</label>
+                <textarea class="textarea" name="messageText" id="mobileMessageText" style="min-height:150px" placeholder="Ej: Cliente pide MSC CARLA ETA 17:20 crew IN 5 OUT 2 muelle sur...">${esc(initialText)}</textarea>
+              </div>
+            </div>
+            <div class="parsed-preview" id="mobileParsedPreview">${parsedPreview(parseServiceText(initialText), isUpdate)}</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" id="sampleWhatsappBtn">Ejemplo WhatsApp</button>
+            <button class="btn btn-secondary" type="button" id="dictateBtn">🎙 Dictar</button>
+            <button class="btn btn-primary" type="submit">${isUpdate ? "Aplicar update" : "Crear expediente"}</button>
+          </div>
+        </form>
+      `;
+      modal.classList.add("open");
+      attachModalClose(modal);
+      const textarea = document.getElementById("mobileMessageText");
+      const preview = document.getElementById("mobileParsedPreview");
+      textarea.addEventListener("input", () => {
+        preview.innerHTML = parsedPreview(parseServiceText(textarea.value), isUpdate);
+      });
+      document.getElementById("sampleWhatsappBtn").addEventListener("click", () => {
+        textarea.value = isUpdate ? sampleUpdateText(selectedId) : sampleWhatsappText();
+        preview.innerHTML = parsedPreview(parseServiceText(textarea.value), isUpdate);
+      });
+      document.getElementById("dictateBtn").addEventListener("click", () => startVoiceCapture(textarea, preview, isUpdate));
+      document.getElementById("mobileMessageForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const raw = form.get("messageText");
+        const parsed = parseServiceText(raw);
+        if (isUpdate) {
+          applyMobileUpdate(parsed, form.get("serviceId"), raw);
+        } else {
+          createServiceFromMobile(parsed, raw);
+        }
+        modal.classList.remove("open");
+      });
+    }
+
+    function parsedPreview(parsed, isUpdate) {
+      if (!parsed.raw) return "Pega un mensaje o usa un ejemplo para ver la interpretación del sistema.";
+      return `
+        <strong>${isUpdate ? "Update detectado" : "Expediente detectado"}</strong>
+        <div class="parsed-grid">
+          <div class="parsed-item"><span>Buque</span>${esc(parsed.buque || "Por confirmar")}</div>
+          <div class="parsed-item"><span>ETA</span>${esc(parsed.eta || "Por confirmar")}</div>
+          <div class="parsed-item"><span>Agente</span>${esc(parsed.agente || "Por confirmar")}</div>
+          <div class="parsed-item"><span>Servicio</span>${esc(labelServicio(parsed.tipo || "crew"))}</div>
+          <div class="parsed-item"><span>Crew</span>IN ${parsed.crewIn ?? 0} · OUT ${parsed.crewOut ?? 0}</div>
+          <div class="parsed-item"><span>Carga</span>${parsed.bultos ? `${parsed.bultos} bultos · ${parsed.peso || 0} kg` : "Sin carga"}</div>
+        </div>
+        <div><strong>Nota:</strong> ${esc(parsed.nota || "Mensaje guardado como respaldo operativo.")}</div>
+      `;
+    }
+
+    function parseServiceText(text) {
+      const raw = String(text || "").trim();
+      const normalized = normalizeText(raw);
+      const existing = SERVICIOS.find((item) =>
+        raw.includes(item.id) || normalized.includes(normalizeText(item.buque))
+      );
+      const etaMatch = normalized.match(/(?:eta|hora|llegada|arribo)\s*(?:a las|:)?\s*(\d{1,2}[:.]\d{2}|\d{1,2})/);
+      const inMatch = normalized.match(/\bin\s*(\d+)/);
+      const outMatch = normalized.match(/\bout\s*(\d+)/);
+      const bultosMatch = normalized.match(/(\d+)\s*(?:bultos|btos|pallets|cajas)/);
+      const pesoMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilos)/);
+      const agente = CLIENTES.find((cliente) => normalized.includes(cliente.nombre.toLowerCase()))?.nombre ||
+        ["Marítima Sur S.L.", "Transitarios del Sur", "Agencia Norte S.A.", "Port Authority"].find((item) => normalized.includes(normalizeText(item))) ||
+        "";
+      const explicitTipo = normalized.includes("carga") || bultosMatch ? "carga" :
+        normalized.includes("practico") ? "practico" :
+        normalized.includes("fondeo") || normalized.includes("opl") ? "fondeo" :
+        normalized.includes("crew") || inMatch || outMatch ? "crew" : "";
+      const tipo = explicitTipo || "crew";
+      let buque = existing?.buque || "";
+      if (!buque) {
+        const shipMatch = raw.match(/(?:buque|barco|motonave|mv|m\/v)\s+([A-Z0-9ÁÉÍÓÚÜÑ][A-Z0-9ÁÉÍÓÚÜÑ .-]{2,}?)(?=\s+(?:eta|hora|agente|crew|carga|in|out|muelle|fondeo)|$)/i);
+        buque = shipMatch ? shipMatch[1].trim().toUpperCase() : "";
+      }
+      const eta = etaMatch ? formatEtaFromText(etaMatch[1]) : "";
+      return {
+        raw,
+        existingId: existing?.id || "",
+        buque,
+        eta,
+        agente,
+        tipo,
+        explicitTipo,
+        crewIn: inMatch ? Number(inMatch[1]) : null,
+        crewOut: outMatch ? Number(outMatch[1]) : null,
+        bultos: bultosMatch ? Number(bultosMatch[1]) : null,
+        peso: pesoMatch ? Number(String(pesoMatch[1]).replace(",", ".")) : null,
+        nota: raw
+      };
+    }
+
+    function normalizeText(value) {
+      return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function formatEtaFromText(value) {
+      const clean = String(value || "").replace(".", ":");
+      const parts = clean.includes(":") ? clean.split(":") : [clean, "00"];
+      return `${String(Number(parts[0])).padStart(2, "0")}:${String(Number(parts[1] || 0)).padStart(2, "0")}`;
+    }
+
+    function createServiceFromMobile(parsed, raw) {
+      if (!parsed.raw) {
+        showToast("Pega o dicta una orden para crear el expediente.");
+        return;
+      }
+      const nextId = 246 + SERVICIOS.length;
+      SERVICIOS.unshift({
+        id: `#2026-${String(nextId).padStart(4, "0")}`,
+        buque: parsed.buque || "BUQUE POR CONFIRMAR",
+        bandera: "🇵🇦",
+        pais: "Panama",
+        naviera: "Pendiente naviera",
+        eta: parsed.eta || "Por confirmar",
+        fecha: "22 May 2026",
+        agente: parsed.agente || "Cliente vía móvil",
+        servicio: [parsed.tipo || "crew"],
+        estado: "nominado",
+        crew: ["crew", "practico"].includes(parsed.tipo) ? {
+          in: parsed.crewIn ?? 0,
+          out: parsed.crewOut ?? 0,
+          nacionalidad: "Por confirmar",
+          destino_out: "Por confirmar"
+        } : null,
+        carga: parsed.tipo === "carga" ? { bultos: parsed.bultos || 1, peso: parsed.peso || 0, descripcion: "Carga informada por móvil", adr: false, proveedor: "Cliente vía móvil" } : null,
+        lancha: "Pendiente asignación",
+        posicion: "Pendiente confirmar",
+        notas: `Creado desde móvil patrón. Origen WhatsApp/llamada: ${raw}`,
+        alertas: [],
+        eta_status: "a_tiempo"
+      });
+      state.filter = "todos";
+      renderMovilPatron();
+      updateBadge();
+      showToast(`✅ Expediente móvil creado para ${parsed.buque || "buque por confirmar"}.`);
+    }
+
+    function applyMobileUpdate(parsed, selectedId, raw) {
+      const servicio = SERVICIOS.find((item) => item.id === selectedId) ||
+        SERVICIOS.find((item) => item.id === parsed.existingId);
+      if (!servicio) {
+        showToast("No encontré el expediente a modificar. Selecciona un servicio o incluye el buque en el texto.");
+        return;
+      }
+      if (parsed.eta) servicio.eta = parsed.eta;
+      if (parsed.explicitTipo && !servicio.servicio.includes(parsed.explicitTipo)) servicio.servicio = [parsed.explicitTipo];
+      if (parsed.agente) servicio.agente = parsed.agente;
+      if (parsed.crewIn !== null || parsed.crewOut !== null) {
+        servicio.crew = servicio.crew || { in: 0, out: 0, nacionalidad: "Por confirmar", destino_out: "Por confirmar" };
+        if (parsed.crewIn !== null) servicio.crew.in = parsed.crewIn;
+        if (parsed.crewOut !== null) servicio.crew.out = parsed.crewOut;
+      }
+      if (parsed.bultos || parsed.peso) {
+        servicio.servicio = ["carga"];
+        servicio.carga = servicio.carga || { bultos: 0, peso: 0, descripcion: "Carga actualizada desde móvil", adr: false, proveedor: "Cliente vía móvil" };
+        if (parsed.bultos) servicio.carga.bultos = parsed.bultos;
+        if (parsed.peso) servicio.carga.peso = parsed.peso;
+      }
+      servicio.notas = `${servicio.notas} Update móvil: ${raw}`;
+      servicio.alertas = servicio.alertas.filter((alerta) => alerta !== "eta_retrasada");
+      renderMovilPatron();
+      showToast(`↻ ${servicio.buque} actualizado desde mensaje móvil.`);
+    }
+
+    function startVoiceCapture(textarea, preview, isUpdate) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        textarea.value = isUpdate ? sampleUpdateText("") : sampleVoiceText();
+        preview.innerHTML = parsedPreview(parseServiceText(textarea.value), isUpdate);
+        showToast("Dictado no disponible en este navegador. Cargué una llamada simulada para la demo.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = "es-ES";
+      recognition.interimResults = false;
+      recognition.onresult = (event) => {
+        textarea.value = event.results[0][0].transcript;
+        preview.innerHTML = parsedPreview(parseServiceText(textarea.value), isUpdate);
+        showToast("Dictado recibido. Revisa la interpretación antes de guardar.");
+      };
+      recognition.onerror = () => {
+        textarea.value = isUpdate ? sampleUpdateText("") : sampleVoiceText();
+        preview.innerHTML = parsedPreview(parseServiceText(textarea.value), isUpdate);
+        showToast("No se pudo usar el micrófono. Cargué una llamada simulada para continuar la demo.");
+      };
+      recognition.start();
+    }
+
+    function sampleWhatsappText() {
+      return "WhatsApp cliente: buque MV ALBORAN eta 18:20 agente Marítima Sur S.L. crew IN 3 OUT 1. Recoger en muelle sur y confirmar documentación.";
+    }
+
+    function sampleVoiceText() {
+      return "Llamada: buque MV ESTRELLA eta 19:10 crew in 2 out 2 agente Transitarios del Sur, patrón confirmar salida por muelle norte.";
+    }
+
+    function sampleUpdateText(selectedId) {
+      const servicio = SERVICIOS.find((item) => item.id === selectedId) || SERVICIOS[0];
+      return `Update WhatsApp: ${servicio.buque} nueva ETA 17:45 crew IN 5 OUT 2. Cliente pide cambiar coordinación a muelle norte.`;
     }
 
     function etaMarkup(servicio) {
